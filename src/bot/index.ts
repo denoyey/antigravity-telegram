@@ -111,12 +111,46 @@ function stripHtmlForFile(html: string): string {
     return text;
 }
 
+/**
+ * Bounded memory cache with LRU eviction and TTL to prevent long-term memory leaks.
+ */
+class BoundedCache<K, V> {
+    private readonly map = new Map<K, { value: V; expiresAt: number }>();
+    constructor(private readonly maxEntries = 50, private readonly ttlMs = 3600000) {}
+
+    set(key: K, value: V): void {
+        if (this.map.size >= this.maxEntries) {
+            const oldestKey = this.map.keys().next().value;
+            if (oldestKey !== undefined) this.map.delete(oldestKey);
+        }
+        this.map.set(key, { value, expiresAt: Date.now() + this.ttlMs });
+    }
+
+    get(key: K): V | undefined {
+        const entry = this.map.get(key);
+        if (!entry) return undefined;
+        if (Date.now() > entry.expiresAt) {
+            this.map.delete(key);
+            return undefined;
+        }
+        return entry.value;
+    }
+
+    delete(key: K): boolean {
+        return this.map.delete(key);
+    }
+
+    has(key: K): boolean {
+        return this.get(key) !== undefined;
+    }
+}
+
 const userStopRequestedChannels = new Set<string>();
 
-/** Channels where the user is expected to type plan edit instructions */
-const planEditPendingChannels = new Map<string, { projectName: string }>();
-/** Cached plan content pages per channel */
-const planContentCache = new Map<string, string[]>();
+/** Channels where the user is expected to type plan edit instructions (bounded LRU, max 50) */
+const planEditPendingChannels = new BoundedCache<string, { projectName: string }>(50, 1800000);
+/** Cached plan content pages per channel (bounded LRU, max 50) */
+const planContentCache = new BoundedCache<string, string[]>(50, 3600000);
 
 function channelKey(ch: TelegramChannel): string {
     return ch.threadId ? `${ch.chatId}:${ch.threadId}` : String(ch.chatId);
@@ -156,6 +190,10 @@ async function sendPromptToAntigravity(
 ): Promise<void> {
     const api = bridge.botApi!;
     const monitorTraceId = channelKey(channel);
+
+    // Clear any stale stop request for this channel before starting a new prompt
+    userStopRequestedChannels.delete(monitorTraceId);
+
     const enqueueGeneral = createSerialTaskQueue('general', monitorTraceId);
     const enqueueResponse = createSerialTaskQueue('response', monitorTraceId);
     const enqueueActivity = createSerialTaskQueue('activity', monitorTraceId);
@@ -267,12 +305,25 @@ async function sendPromptToAntigravity(
 
     const editMsg = async (msgId: number, text: string): Promise<void> => {
         try {
-            const truncated = text.length > TELEGRAM_MSG_LIMIT ? text.slice(0, TELEGRAM_MSG_LIMIT - 20) + '\n...(truncated)' : text;
-            await api.editMessageText(channel.chatId, msgId, truncated, { parse_mode: 'HTML' });
+            let processed = text;
+            if (processed.length > TELEGRAM_MSG_LIMIT) {
+                processed = balanceHtmlTags(processed.slice(0, TELEGRAM_MSG_LIMIT - 30)) + '\n...(truncated)';
+            }
+            await api.editMessageText(channel.chatId, msgId, processed, { parse_mode: 'HTML' });
         } catch (e: any) {
             const desc = e?.description || e?.message || '';
-            if (!desc.includes('message is not modified')) {
-                logger.error('[editMsg] Failed:', desc);
+            if (desc.includes('message is not modified')) {
+                return;
+            }
+            // Fallback: try plain text if HTML entity parsing fails on truncated markdown/html
+            try {
+                const plain = stripHtml(text.slice(0, TELEGRAM_MSG_LIMIT - 30)) + '\n...(truncated)';
+                await api.editMessageText(channel.chatId, msgId, plain, { parse_mode: undefined });
+            } catch (e2: any) {
+                const desc2 = e2?.description || e2?.message || '';
+                if (!desc2.includes('message is not modified')) {
+                    logger.warn('[editMsg] Failed to edit message:', desc2);
+                }
             }
         }
     };
@@ -1169,7 +1220,12 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
 
             if (value?.ok) {
                 const ch = getChannel(ctx);
-                userStopRequestedChannels.add(channelKey(ch));
+                const key = channelKey(ch);
+                userStopRequestedChannels.add(key);
+                // Auto-cleanup stop flag after 30s to prevent state bleeding into future prompts
+                setTimeout(() => {
+                    userStopRequestedChannels.delete(key);
+                }, 30000);
                 await replyHtml(ctx, `<b>⏹️ Generation Interrupted</b>\nAI response generation was safely stopped.`);
             } else {
                 await replyHtml(ctx, `<b>⚠️ Could Not Stop</b>\n${escapeHtml(value?.error || 'Stop button not found.')}`);
@@ -1913,21 +1969,21 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
             logger.info(`Bot started as @${botInfo.username} | extractionMode=${config.extractionMode}`);
             try {
                 await bot.api.setMyCommands([
-                    { command: 'start', description: 'Tin nhắn chào mừng' },
-                    { command: 'help', description: 'Hiển thị tất cả lệnh' },
-                    { command: 'project', description: 'Chọn một dự án' },
-                    { command: 'new', description: 'Bắt đầu phiên chat mới' },
-                    { command: 'chat', description: 'Thông tin phiên hiện tại' },
-                    { command: 'mode', description: 'Thay đổi chế độ thực thi' },
-                    { command: 'model', description: 'Thay đổi mô hình LLM' },
-                    { command: 'stop', description: 'Dừng việc tạo kết quả' },
-                    { command: 'screenshot', description: 'Chụp màn hình Antigravity' },
-                    { command: 'template', description: 'Hiển thị mẫu lời nhắc' },
-                    { command: 'template_add', description: 'Đăng ký một mẫu' },
-                    { command: 'template_delete', description: 'Xóa một mẫu' },
-                    { command: 'autoaccept', description: 'Bật/tắt chế độ tự động duyệt' },
-                    { command: 'status', description: 'Tổng quan trạng thái bot' },
-                    { command: 'ping', description: 'Kiểm tra độ trễ' },
+                    { command: 'start', description: 'Start bot and view welcome info' },
+                    { command: 'help', description: 'Display all available commands' },
+                    { command: 'project', description: 'Select and bind a workspace' },
+                    { command: 'new', description: 'Start a fresh chat session' },
+                    { command: 'chat', description: 'Show current session info' },
+                    { command: 'mode', description: 'Switch execution mode (Fast/Plan)' },
+                    { command: 'model', description: 'Switch active LLM model' },
+                    { command: 'stop', description: 'Interrupt active generation' },
+                    { command: 'screenshot', description: 'Capture Antigravity window screenshot' },
+                    { command: 'template', description: 'List registered prompt templates' },
+                    { command: 'template_add', description: 'Register a new prompt template' },
+                    { command: 'template_delete', description: 'Delete a prompt template' },
+                    { command: 'autoaccept', description: 'Configure auto-approval policy' },
+                    { command: 'status', description: 'Show connection & quota status' },
+                    { command: 'ping', description: 'Check gateway response latency' },
                 ]);
                 logger.info('Telegram command menu registered successfully');
             } catch (err) {

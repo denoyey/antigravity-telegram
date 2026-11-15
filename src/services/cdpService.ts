@@ -237,7 +237,15 @@ export class CdpService extends EventEmitter {
                 }
 
                 if (data.method === 'Runtime.executionContextCreated') {
-                    this.contexts.push(data.params.context);
+                    const ctx = data.params?.context;
+                    if (ctx) {
+                        const existingIdx = this.contexts.findIndex(c => c.id === ctx.id);
+                        if (existingIdx !== -1) {
+                            this.contexts[existingIdx] = ctx;
+                        } else {
+                            this.contexts.push(ctx);
+                        }
+                    }
                 }
                 if (data.method === 'Runtime.executionContextDestroyed') {
                     const idx = this.contexts.findIndex(c => c.id === data.params.executionContextId);

@@ -97,6 +97,14 @@ export class ScheduleService extends BaseService {
     }
 
     /**
+     * Stop all running cron jobs and release resources.
+     */
+    public override async stop(): Promise<void> {
+        this.stopAll();
+        await super.stop();
+    }
+
+    /**
      * Stop all running cron jobs (called on bot shutdown)
      */
     public stopAll(): void {

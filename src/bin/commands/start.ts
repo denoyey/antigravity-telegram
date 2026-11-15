@@ -32,6 +32,11 @@ export async function startAction(
     console.log(LOGO);
     acquireLock();
 
+    // Prevent unhandled promise rejections from crashing the long-running daemon
+    process.on('unhandledRejection', (reason) => {
+        logger.error('[Daemon] Unhandled Promise Rejection:', reason);
+    });
+
     // Non-blocking update check (fire-and-forget)
     checkForUpdates(version).catch(() => {});
 
