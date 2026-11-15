@@ -980,7 +980,7 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
     // /start command
     bot.command('start', async (ctx) => {
         await replyHtml(ctx,
-            `<b>antigravity-telegram-remote Online</b>\n\n` +
+            `<b>Antigravity Telegram Online</b>\n\n` +
             `Use /help for available commands.\n` +
             `Send any text message to forward it to Antigravity.`
         );
@@ -989,7 +989,7 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
     // /help command
     bot.command('help', async (ctx) => {
         await replyHtml(ctx,
-            `<b>📖 antigravity-telegram-remote Commands</b>\n\n` +
+            `<b>📖 Antigravity Telegram Commands</b>\n\n` +
             `<b>💬 Chat</b>\n` +
             `/new — Start a new chat session\n` +
             `/chat — Show current session info\n\n` +
@@ -1896,7 +1896,7 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
         });
     });
 
-    logger.info('Starting antigravity-telegram-remote Telegram bot...');
+    logger.info('Starting Antigravity Telegram bot...');
 
     // Graceful shutdown: close database on exit
     const closeDb = () => { try { db.close(); } catch { /* ignore */ } };

@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger';
+import { BaseService } from './baseService';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as https from 'https';
@@ -20,10 +21,14 @@ export interface UserStatusData {
     clientModelConfigs?: ModelQuota[];
 }
 
-export class QuotaService {
+export class QuotaService extends BaseService {
     private cachedPort: number | null = null;
     private cachedCsrfToken: string | null = null;
     private cachedPid: number | null = null;
+
+    constructor() {
+        super('QuotaService');
+    }
 
     private async getUnixProcessInfo(): Promise<{pid: number, csrf_token: string} | null> {
         try {

@@ -1,4 +1,5 @@
 import { spawn, ChildProcess } from 'child_process';
+import { BaseService } from './baseService';
 
 export interface TaskOptions {
     id: string;
@@ -10,12 +11,13 @@ export interface TaskOptions {
     onClose?: (code: number) => void;
 }
 
-export class ProcessManager {
+export class ProcessManager extends BaseService {
     private maxConcurrentTasks: number;
     private queue: TaskOptions[] = [];
     private runningProcesses: Map<string, ChildProcess> = new Map();
 
     constructor(maxConcurrentTasks: number = 1) {
+        super('ProcessManager');
         this.maxConcurrentTasks = maxConcurrentTasks;
     }
 

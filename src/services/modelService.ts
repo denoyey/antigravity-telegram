@@ -1,4 +1,5 @@
 import { t } from "../utils/i18n";
+import { BaseService } from './baseService';
 
 /**
  * Available LLM models
@@ -31,8 +32,12 @@ export interface ModelSetResult {
  * Service class for managing LLM models.
  * Handles model switching via the /model command.
  */
-export class ModelService {
+export class ModelService extends BaseService {
     private currentModel: Model = DEFAULT_MODEL;
+
+    constructor() {
+        super('ModelService');
+    }
 
     /**
      * Get the current LLM model

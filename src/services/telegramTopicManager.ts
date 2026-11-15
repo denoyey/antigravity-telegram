@@ -1,4 +1,5 @@
 import { Api } from 'grammy';
+import { BaseService } from './baseService';
 import { logger } from '../utils/logger';
 
 export interface EnsureTopicResult {
@@ -10,12 +11,13 @@ export interface EnsureTopicResult {
  * Manages Telegram Forum Topics for workspace isolation.
  * Each workspace gets its own topic in a forum-enabled supergroup.
  */
-export class TelegramTopicManager {
+export class TelegramTopicManager extends BaseService {
     private chatId: number | string;
     private readonly api: Api;
     private topicCache: Map<string, number> = new Map();
 
     constructor(api: Api, chatId: number | string) {
+        super('TelegramTopicManager');
         this.api = api;
         this.chatId = chatId;
     }

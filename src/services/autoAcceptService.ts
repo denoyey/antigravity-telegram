@@ -1,4 +1,5 @@
 import { t } from "../utils/i18n";
+import { BaseService } from './baseService';
 
 export type AutoAcceptAction = 'on' | 'off' | 'status';
 
@@ -9,10 +10,11 @@ export interface AutoAcceptCommandResult {
     message: string;
 }
 
-export class AutoAcceptService {
+export class AutoAcceptService extends BaseService {
     private enabled: boolean;
 
     constructor(initialEnabled: boolean = false) {
+        super('AutoAcceptService');
         this.enabled = initialEnabled;
     }
 

@@ -53,7 +53,49 @@ export abstract class BaseRepository<TRecord, TCreateInput> {
 ```
 - **Reusability**: Any new table or SQLite entity across this or future projects extends `BaseRepository`, immediately inheriting statement compilation and transaction wrappers.
 
-#### 2.2. Reusable Command Pattern (`ICommandHandler` & `CommandRegistry`)
+#### 2.2. Reusable Service Framework (`BaseService`)
+An abstract base service class that standardizes lifecycle tracking, structured logging, and resilient error boundary execution across domain services:
+
+```typescript
+export abstract class BaseService {
+    protected readonly serviceName: string;
+    protected running = false;
+
+    constructor(serviceName?: string) {
+        this.serviceName = serviceName || this.constructor.name;
+    }
+
+    public async start(): Promise<void> {
+        this.running = true;
+        logger.debug(`[${this.serviceName}] Service started`);
+    }
+
+    public async stop(): Promise<void> {
+        this.running = false;
+        logger.debug(`[${this.serviceName}] Service stopped`);
+    }
+
+    public isRunning(): boolean {
+        return this.running;
+    }
+
+    protected async safeExecute<T>(
+        operationName: string,
+        operation: () => Promise<T>,
+        fallbackValue: T
+    ): Promise<T> {
+        try {
+            return await operation();
+        } catch (error: any) {
+            logger.error(`[${this.serviceName}] Error during ${operationName}:`, error?.message || error);
+            return fallbackValue;
+        }
+    }
+}
+```
+- **Reusability & Safety**: Extended by domain services (`QuotaService`, `WorkspaceService`, `ModeService`, `ModelService`, `AutoAcceptService`, `ChatSessionService`, `TitleGeneratorService`, `UpdateCheckService`, `ScheduleService`, `ProcessManager`, `TelegramTopicManager`). Operations wrapped in `safeExecute` guarantee graceful degradation without crashing the host process.
+
+#### 2.3. Reusable Command Pattern (`ICommandHandler` & `CommandRegistry`)
 Decouples bot command execution from Grammy-specific event handling:
 
 ```typescript
@@ -89,7 +131,7 @@ export class CommandRegistry {
 ```
 - **Reusability**: Allows the exact same command logic to be bound to Telegram, Discord, Slack, CLI, or an internal Webhook server without modifying business logic.
 
-#### 2.3. Decoupled CDP Engine (`ICdpClient`)
+#### 2.4. Decoupled CDP Engine (`ICdpClient`)
 Isolates Chrome DevTools Protocol interaction behind an interface:
 - Methods: `connect()`, `disconnect()`, `call(method, params)`, `evaluate(expression)`, `sendText(text)`.
 - Can be reused directly to automate any Chromium-based application (VS Code, Electron apps, Chrome headless, Puppeteer-like drivers).

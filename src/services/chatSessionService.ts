@@ -1,4 +1,5 @@
 import { CdpService } from './cdpService';
+import { BaseService } from './baseService';
 
 /** Session list item from the side panel */
 export interface SessionListItem {
@@ -438,7 +439,11 @@ function buildActivateViaPastConversationsScript(title: string): string {
  *
  * CDP dependencies are received as method arguments (connection pool compatible).
  */
-export class ChatSessionService {
+export class ChatSessionService extends BaseService {
+    constructor() {
+        super('ChatSessionService');
+    }
+
     private static readonly ACTIVATE_SESSION_MAX_WAIT_MS = 30000;
     private static readonly ACTIVATE_SESSION_RETRY_INTERVAL_MS = 800;
     private static readonly LIST_SESSIONS_TARGET = 20;

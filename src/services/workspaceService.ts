@@ -1,14 +1,16 @@
 import fs from 'fs';
+import { BaseService } from './baseService';
 import { resolveSafePath } from '../middleware/sanitize';
 
 /**
  * Service for workspace filesystem operations and path validation.
  * Manages directories under WORKSPACE_BASE_DIR.
  */
-export class WorkspaceService {
+export class WorkspaceService extends BaseService {
     private readonly baseDir: string;
 
     constructor(baseDir: string) {
+        super('WorkspaceService');
         this.baseDir = baseDir;
     }
 
@@ -26,7 +28,6 @@ export class WorkspaceService {
      */
     public scanWorkspaces(): string[] {
         this.ensureBaseDir();
-        console.log(`[DEBUG] Scanning workspaces in: ${this.baseDir}`);
 
         try {
             const entries = fs.readdirSync(this.baseDir, { withFileTypes: true });

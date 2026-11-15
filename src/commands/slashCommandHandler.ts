@@ -1,5 +1,6 @@
 import { t } from "../utils/i18n";
 import { TemplateRepository } from '../database/templateRepository';
+import { ICommandHandler, CommandContext } from './commandInterface';
 
 /**
  * Command execution result type definition
@@ -13,11 +14,19 @@ export interface CommandResult {
     prompt?: string;
 }
 
-export class SlashCommandHandler {
+export class SlashCommandHandler implements ICommandHandler {
+    readonly name = 'template';
+    readonly description = 'Manage and inject reusable prompt templates';
+
     private templateRepo: TemplateRepository;
 
     constructor(templateRepo: TemplateRepository) {
         this.templateRepo = templateRepo;
+    }
+
+    public async execute(ctx: CommandContext): Promise<void> {
+        const result = await this.handleCommand('template', ctx.args);
+        await ctx.reply(result.message);
     }
 
     /**

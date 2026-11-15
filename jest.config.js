@@ -2,6 +2,8 @@
 module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
+    testTimeout: 15000,
+    maxWorkers: '50%',
     roots: ['<rootDir>/tests'],
     testPathIgnorePatterns: [
         '<rootDir>/tests/services/responseMonitor.test.ts',

@@ -1,4 +1,5 @@
 import { t } from "../utils/i18n";
+import { BaseService } from './baseService';
 
 /**
  * Available execution modes
@@ -47,8 +48,12 @@ export interface ModeSetResult {
  * Service class for managing execution modes.
  * Handles mode switching via the /mode command.
  */
-export class ModeService {
+export class ModeService extends BaseService {
     private currentMode: Mode = DEFAULT_MODE;
+
+    constructor() {
+        super('ModeService');
+    }
 
     /**
      * Get the current execution mode

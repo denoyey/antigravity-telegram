@@ -1,4 +1,5 @@
 import { CdpService } from './cdpService';
+import { BaseService } from './baseService';
 
 /**
  * Script to generate channel name titles using Gemini Flash within the Antigravity UI.
@@ -34,7 +35,10 @@ const GENERATE_TITLE_SCRIPT = `(async (userPrompt) => {
  *   1. Call Antigravity's Gemini Flash API via CdpService (future implementation)
  *   2. Fallback: extract and sanitize leading text from the user prompt
  */
-export class TitleGeneratorService {
+export class TitleGeneratorService extends BaseService {
+    constructor() {
+        super('TitleGeneratorService');
+    }
     /**
      * Generate a short title from the user's prompt
      * @param prompt User's prompt

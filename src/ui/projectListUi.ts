@@ -23,7 +23,6 @@ export function buildProjectListUI(
     workspaces: string[],
     page: number = 0,
 ): { text: string; keyboard: InlineKeyboard } {
-    console.log(`[DEBUG] buildProjectListUI: wsCount=${workspaces.length}, page=${page}`);
     const totalPages = Math.max(1, Math.ceil(workspaces.length / ITEMS_PER_PAGE));
     const safePage = Math.max(0, Math.min(page, totalPages - 1));
 

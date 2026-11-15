@@ -1,4 +1,5 @@
 import * as cron from 'node-cron';
+import { BaseService } from './baseService';
 import { ScheduleRepository, ScheduleRecord } from '../database/scheduleRepository';
 
 /**
@@ -14,12 +15,13 @@ export type JobCallback = (schedule: ScheduleRecord) => void;
  * - Handles adding, removing, and listing schedules
  * - Provides bulk stop of all schedules (e.g. on shutdown)
  */
-export class ScheduleService {
+export class ScheduleService extends BaseService {
     private repo: ScheduleRepository;
     /** Map managing active cron tasks (schedule ID -> ScheduledTask) */
     private activeTasks: Map<number, cron.ScheduledTask> = new Map();
 
     constructor(repo: ScheduleRepository) {
+        super('ScheduleService');
         this.repo = repo;
     }
 
