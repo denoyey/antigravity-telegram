@@ -272,6 +272,7 @@ We welcome community contributions! Please adhere to our development standards:
    ```
 4. Update the relevant PRD documents in `docs/prd/` and `README.md`.
 5. Submit a detailed Pull Request.
+6. Releases are automatically published to npm via GitHub Actions using OIDC Trusted Publishing (`.github/workflows/publish.yml`).
 
 Detailed guidelines, code conventions, and our Code of Conduct are maintained in **[.agents/AGENTS.md](.agents/AGENTS.md)**.
 

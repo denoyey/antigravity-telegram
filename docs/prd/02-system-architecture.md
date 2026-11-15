@@ -178,3 +178,12 @@ To ensure uninterrupted multi-week execution without memory leaks or crashes:
 3. **Resilient Message Editing**: Live response streaming balances unclosed tags (`balanceHtmlTags`) when message truncation occurs, with an automatic plain-text fallback (`stripHtml`) to prevent Telegram `Bad Request: can't parse entities` aborts.
 4. **Unhandled Rejection Traps**: Global unhandled promise rejection listeners prevent host process crashes during transient network disconnects.
 5. **Stale Flag Auto-Purge**: Stop requests auto-expire after 30 seconds and are purged prior to any new prompt dispatch to prevent state contamination.
+
+---
+
+### 6. Automated Publishing Pipeline (npm Trusted Publisher via OIDC)
+
+To ensure secure, secretless package releases without long-lived npm tokens:
+1. **GitHub Actions Workflow (`.github/workflows/publish.yml`)**: Triggered on GitHub releases, version tags (`v*`), or manual dispatch (`workflow_dispatch`).
+2. **OpenID Connect (OIDC) Authentication**: Uses `permissions: id-token: write` to exchange cryptographic claims directly with `registry.npmjs.org`.
+3. **Supply Chain Provenance**: Automated verification with `npm publish --provenance --access public`.
