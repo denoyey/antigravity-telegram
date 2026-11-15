@@ -1,4 +1,4 @@
-# ANTIRLM (Antigravity Telegram Remote) - Master Agent Guide
+# Antigravity Telegram (ANTIRLM) - Master Agent Guide
 ## Project Architecture, Security Standards, and Operational Guidelines
 
 > **Target Audience**: AI Agents (Antigravity, Claude Code, Cursor, Copilot) and Human Core Contributors.  
@@ -8,7 +8,7 @@
 
 ## 1. Project Identity & Mission
 
-**Antigravity Telegram Remote (ANTIRLM)** is a local-first remote gateway connecting smartphone devices via Telegram to the desktop [Antigravity IDE](https://antigravity.dev). Operating 100% locally on the host machine via the Chrome DevTools Protocol (CDP), ANTIRLM eliminates the requirement for intermediary cloud relays, third-party backend proxies, or external hosted services.
+**Antigravity Telegram (ANTIRLM)** is a local-first remote gateway connecting smartphone devices via Telegram to the desktop [Antigravity IDE](https://antigravity.dev). Operating 100% locally on the host machine via the Chrome DevTools Protocol (CDP), ANTIRLM eliminates the requirement for intermediary cloud relays, third-party backend proxies, or external hosted services.
 
 ### Core Value Pillars
 

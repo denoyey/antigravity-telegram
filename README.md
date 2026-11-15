@@ -1,32 +1,48 @@
-# 🚀 ANTIRLM (Antigravity Telegram Remote)
+<div align="center">
 
-<p align="center">
-  <strong>Control your Antigravity AI IDE from anywhere — directly from Telegram.</strong><br>
-  <em>A local-first, privacy-focused remote control gateway powered by the Chrome DevTools Protocol (CDP).</em>
-</p>
+  <img src="docs/images/banner.svg" alt="Antigravity Telegram Banner" width="100%" />
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
-  <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square&logo=node.js" alt="Node.js" />
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform" />
-  <img src="https://img.shields.io/badge/version-0.2.12-blue?style=flat-square" alt="Version" />
-  <a href="docs/prd/README.md"><img src="https://img.shields.io/badge/PRD-10%20Modules-purple?style=flat-square" alt="PRD Suite" /></a>
-  <img src="https://img.shields.io/badge/security-Zero--Trust%20Audited-success?style=flat-square" alt="Security Audited" />
-</p>
+  <br/><br/>
+
+  <h1>🚀 Antigravity Telegram</h1>
+
+  <p>
+    <strong>Control your Antigravity AI IDE from anywhere — directly from Telegram.</strong><br>
+    <em>A local-first, privacy-focused remote control gateway powered by the Chrome DevTools Protocol (CDP).</em>
+  </p>
+
+  <p>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
+    <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square&logo=node.js" alt="Node.js" />
+    <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform" />
+    <img src="https://img.shields.io/badge/version-0.2.12-blue?style=flat-square" alt="Version" />
+    <a href="docs/prd/README.md"><img src="https://img.shields.io/badge/PRD-10%20Modules-purple?style=flat-square" alt="PRD Suite" /></a>
+    <img src="https://img.shields.io/badge/security-Zero--Trust%20Audited-success?style=flat-square" alt="Security Audited" />
+  </p>
+
+  <p>
+    <a href="#-quick-start"><b>Quick Start</b></a> •
+    <a href="#-key-capabilities"><b>Key Capabilities</b></a> •
+    <a href="#️-command-reference"><b>Command Reference</b></a> •
+    <a href="#️-architecture--interaction-flow"><b>Architecture</b></a> •
+    <a href="#-technical-documentation-suite"><b>PRD Documentation</b></a>
+  </p>
+
+</div>
 
 ---
 
 ## 📖 Overview
 
-**ANTIRLM (Antigravity Telegram Remote)** is a lightweight, local-first bridge that connects your smartphone or any Telegram client directly to your desktop [Antigravity IDE](https://antigravity.dev).
+**Antigravity Telegram (ANTIRLM)** is a lightweight, local-first bridge that connects your smartphone or any Telegram client directly to your desktop [Antigravity IDE](https://antigravity.dev).
 
-Whether you are commuting, having coffee, or working away from your desk, ANTIRLM enables you to supervise long-running coding agents, review file edits, approve command executions, send voice notes, and receive real-time code output.
+Whether you are commuting, having coffee, or working away from your desk, Antigravity Telegram enables you to supervise long-running coding agents, review file edits, approve command executions, send voice notes, and receive real-time code output.
 
-**100% Local & Private**: Unlike cloud-hosted relays, ANTIRLM runs entirely on your host machine. Telemetry, credentials, prompts, and source code never pass through external intermediate servers. The bot relies exclusively on outbound HTTPS long-polling to Telegram servers; zero inbound listening ports are exposed to the Internet.
+**100% Local & Private**: Unlike cloud-hosted relays, Antigravity Telegram runs entirely on your host machine. Telemetry, credentials, prompts, and source code never pass through external intermediate servers. The bot relies exclusively on outbound HTTPS long-polling to Telegram servers; zero inbound listening ports are exposed to the Internet.
 
 ```
 +-----------------------------------------------------------------------------------------+
-|                                    ANTIRLM TOPOLOGY                                     |
+|                              ANTIGRAVITY TELEGRAM TOPOLOGY                              |
 +-----------------------------------------------------------------------------------------+
 |  [ Telegram App (Mobile / Desktop) ]                                                    |
 |                 ^                                                                       |
@@ -89,13 +105,13 @@ Whether you are commuting, having coffee, or working away from your desk, ANTIRL
 
 #### Global Install via npm (Recommended)
 ```bash
-npm install -g antigravity-telegram-remote
+npm install -g antigravity-telegram
 ```
 
 #### Or Install from Source
 ```bash
-git clone https://github.com/hongquandev/antigravity-telegram-remote.git
-cd antigravity-telegram-remote
+git clone https://github.com/hongquandev/antigravity-telegram.git
+cd antigravity-telegram
 npm install
 npm run build
 ```
@@ -104,29 +120,29 @@ npm run build
 
 Run the interactive setup wizard to configure your Telegram Bot Token, Allowed User IDs, and Workspace Root Directory:
 ```bash
-antigravity-telegram-remote setup
+antigravity-telegram setup
 ```
 
 The configuration is saved securely to `.env` or `~/.config/antigravity-telegram-remote/config.json` with `600` file permissions.
 
 ### 3. Launch Antigravity with CDP Debugging
 
-ANTIRLM interacts with Antigravity through its Chrome DevTools Protocol port. Launch Antigravity with debugging enabled:
+Antigravity Telegram interacts with Antigravity through its Chrome DevTools Protocol port. Launch Antigravity with debugging enabled:
 ```bash
-antigravity-telegram-remote open
+antigravity-telegram open
 ```
 
 ### 4. Start the Telegram Bot
 
 In your terminal, start the bot daemon:
 ```bash
-antigravity-telegram-remote start
+antigravity-telegram start
 ```
 
 > [!TIP]
 > If you experience connection issues or want to verify your setup, run the diagnostic doctor:
 > ```bash
-> antigravity-telegram-remote doctor
+> antigravity-telegram doctor
 > ```
 
 ---
@@ -137,11 +153,13 @@ antigravity-telegram-remote start
 
 | Command | Description |
 | :--- | :--- |
-| `antigravity-telegram-remote setup` | Run the interactive setup and configuration wizard. |
-| `antigravity-telegram-remote open` | Scan available ports and launch Antigravity with CDP enabled. |
-| `antigravity-telegram-remote start` | Start the Telegram bot gateway. |
-| `antigravity-telegram-remote doctor` | Diagnose environment, Node version, CDP connectivity, and database health. |
-| `antigravity-telegram-remote --verbose`| Start with verbose debug-level logging. |
+| `antigravity-telegram setup` | Run the interactive setup and configuration wizard. |
+| `antigravity-telegram open` | Scan available ports and launch Antigravity with CDP enabled. |
+| `antigravity-telegram start` | Start the Telegram bot gateway. |
+| `antigravity-telegram doctor` | Diagnose environment, Node version, CDP connectivity, and database health. |
+| `antigravity-telegram --verbose` | Start with verbose debug-level logging. |
+
+*(Note: `antigravity-telegram-remote` is supported as an alias for all CLI commands).*
 
 ### Telegram Slash Commands (Chat / Topic)
 
@@ -201,7 +219,7 @@ sequenceDiagram
 
 ## 📚 Technical Documentation Suite
 
-ANTIRLM maintains an exhaustive, modular technical documentation suite:
+Antigravity Telegram maintains an exhaustive, modular technical documentation suite:
 
 - **[Master Agent Guide (.agents/AGENTS.md)](.agents/AGENTS.md)**: Master engineering guide, OOP standards, threat models, contributor workflows, and maintenance rules.
 - **[Product Requirements Document (PRD) Suite (docs/prd/)](docs/prd/README.md)**:
@@ -267,7 +285,7 @@ This project is licensed under the terms of the [MIT License](LICENSE).
 
 ## 🙏 Acknowledgements
 
-ANTIRLM originated from and inherits foundational architectural concepts from **[optimistengineer/remoat](https://github.com/optimistengineer/remoat)**.
+Antigravity Telegram originated from and inherits foundational architectural concepts from **[optimistengineer/remoat](https://github.com/optimistengineer/remoat)**.
 
 We express our gratitude to the original creators. Building upon that foundation, this version has been audited, overhauled, and expanded by **Quan Nguyen - TNM**:
 - Migrated to an **Event-Driven (`MutationObserver` + CDP Binding)** pipeline achieving <100ms updates and low CPU usage.

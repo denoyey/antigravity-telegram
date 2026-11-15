@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#161536"/>
+    </linearGradient>
+
+    <!-- Glowing Accent Gradient -->
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+
+    <!-- Telegram Circle Gradient -->
+    <linearGradient id="tgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2aabee"/>
+      <stop offset="100%" stop-color="#229ed9"/>
+    </linearGradient>
+
+    <!-- Subtle Glow Filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 34px; font-weight: 800; fill: #ffffff; letter-spacing: -0.5px; }
+    .subtitle { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 400; fill: #94a3b8; }
+    .tag { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; font-weight: 600; fill: #e2e8f0; }
+  </style>
+
+  <!-- Card Background -->
+  <rect width="800" height="200" rx="16" fill="url(#bgGrad)"/>
+  <rect width="800" height="200" rx="16" fill="none" stroke="#334155" stroke-width="1.5" stroke-opacity="0.6"/>
+
+  <!-- Background Ambient Lights -->
+  <circle cx="120" cy="100" r="60" fill="#38bdf8" opacity="0.12" filter="url(#glow)"/>
+  <circle cx="700" cy="90" r="70" fill="#818cf8" opacity="0.12" filter="url(#glow)"/>
+
+  <!-- Decorative Tech Circuit Lines -->
+  <path d="M 620 40 L 730 40 L 760 70 L 760 140 L 730 170 L 650 170" fill="none" stroke="#1e293b" stroke-width="2"/>
+  <circle cx="620" cy="40" r="3" fill="#38bdf8"/>
+  <circle cx="650" cy="170" r="3" fill="#c084fc"/>
+
+  <path d="M 50 160 L 120 160 L 150 130" fill="none" stroke="#1e293b" stroke-width="2"/>
+  <circle cx="50" cy="160" r="3" fill="#38bdf8"/>
+
+  <!-- Left Logo Group -->
+  <g transform="translate(65, 52)">
+    <!-- Telegram Background Disc -->
+    <circle cx="48" cy="48" r="42" fill="url(#tgGrad)" filter="url(#glow)"/>
+    <!-- Telegram Paper Airplane Icon -->
+    <path d="M 33 47 L 61 35 C 62.3 34.4 63.6 35.3 63.2 36.6 L 58.4 60.1 C 58 62 55.7 62.5 54.4 61.2 L 46.5 54.2 L 42.6 58 C 42 58.6 41 58.2 41 57.3 L 41.5 50.8 L 57.5 39.5 L 36.5 45.3 L 33 47 Z" fill="#ffffff"/>
+    
+    <!-- Antigravity / AI Orbit Ring -->
+    <circle cx="48" cy="48" r="50" fill="none" stroke="url(#accentGrad)" stroke-width="2" stroke-dasharray="8 6" opacity="0.8"/>
+  </g>
+
+  <!-- Content Group -->
+  <g transform="translate(195, 55)">
+    <!-- Project Name -->
+    <text x="0" y="32" class="title">Antigravity Telegram</text>
+    
+    <!-- Subtitle / Value Proposition -->
+    <text x="0" y="58" class="subtitle">Local-First Remote Control Gateway for Antigravity AI IDE</text>
+
+    <!-- Feature Pills -->
+    <g transform="translate(0, 78)">
+      <!-- Pill 1: CDP Event-Driven -->
+      <g transform="translate(0, 0)">
+        <rect width="112" height="24" rx="12" fill="#1e293b" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.4"/>
+        <text x="10" y="16" class="tag" fill="#38bdf8">⚡ &lt;100ms CDP</text>
+      </g>
+
+      <!-- Pill 2: 100% Local / Zero-Trust -->
+      <g transform="translate(122, 0)">
+        <rect width="124" height="24" rx="12" fill="#1e293b" stroke="#10b981" stroke-width="1" stroke-opacity="0.4"/>
+        <text x="10" y="16" class="tag" fill="#34d399">🔒 Zero-Trust Local</text>
+      </g>
+
+      <!-- Pill 3: Topic Workspaces -->
+      <g transform="translate(256, 0)">
+        <rect width="134" height="24" rx="12" fill="#1e293b" stroke="#818cf8" stroke-width="1" stroke-opacity="0.4"/>
+        <text x="10" y="16" class="tag" fill="#a5b4fc">📂 Topic Workspaces</text>
+      </g>
+
+      <!-- Pill 4: Local Whisper -->
+      <g transform="translate(400, 0)">
+        <rect width="118" height="24" rx="12" fill="#1e293b" stroke="#c084fc" stroke-width="1" stroke-opacity="0.4"/>
+        <text x="10" y="16" class="tag" fill="#e879f9">🎙️ Local Whisper</text>
+      </g>
+    </g>
+  </g>
+</svg>

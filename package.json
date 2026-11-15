@@ -4,6 +4,7 @@
   "description": "Control Antigravity from anywhere — a local Telegram Bot that lets you remotely operate Antigravity on your home PC from your smartphone.",
   "main": "dist/index.js",
   "bin": {
+    "antigravity-telegram": "dist/bin/cli.js",
     "antigravity-telegram-remote": "dist/bin/cli.js"
   },
   "files": [
