@@ -283,13 +283,35 @@ This project is licensed under the terms of the [MIT License](LICENSE).
 
 ---
 
-## 🙏 Acknowledgements
+## 🙏 Acknowledgements & Attribution
 
-Antigravity Telegram originated from and inherits foundational architectural concepts from **[optimistengineer/remoat](https://github.com/optimistengineer/remoat)**.
+<div align="center">
 
-We express our gratitude to the original creators. Building upon that foundation, this version has been audited, overhauled, and expanded by **Quan Nguyen - TNM**:
-- Migrated to an **Event-Driven (`MutationObserver` + CDP Binding)** pipeline achieving <100ms updates and low CPU usage.
-- Hardened security via **`realpathSync` canonical path resolution** to eliminate symlink path traversal vulnerabilities.
-- Modernized the codebase with a **Reusable Object-Oriented Architecture** (`BaseRepository`, `BaseService`, `CommandRegistry`).
-- Integrated **On-Device Whisper** speech-to-text and rich image attachment handling.
-- Implemented complete internationalization (`en`, `vi`, `ja`).
+> ### 💖 Special Thanks to the Original Creator
+>
+> This project proudly builds upon the pioneering architecture of **[optimistengineer/remoat](https://github.com/optimistengineer/remoat)**.  
+> We express our heartfelt gratitude to the original creators and contributors for innovating the core concept of controlling desktop AI coding assistants through the Chrome DevTools Protocol and Telegram.
+
+</div>
+
+### 🌟 Lineage & Engineering Evolution
+
+```
+[ optimistengineer/remoat ] ──► Foundational Concept: Local CDP Bridge & Telegram Gateway
+             │
+             ▼
+[ Antigravity Telegram ]   ──► Audited, Overhauled & Expanded by Quan Nguyen - TNM
+```
+
+| Architecture Area | Upstream Foundation (`remoat`) | Antigravity Telegram Enhancement |
+| :--- | :--- | :--- |
+| **DOM Synchronization** | 2-second polling intervals | **Event-Driven `MutationObserver`** + CDP Binding (`<100ms` instant delta updates) |
+| **Path Traversal Security**| Standard path normalization | **Canonical `realpathSync`** resolution (hardened defense against symlink escapes) |
+| **Software Architecture** | Flat procedural handlers | **Modular OOP Architecture** (`BaseRepository`, `BaseService`, `CommandRegistry`) |
+| **Audio & Voice Support** | Text only | **On-Device Whisper (`whisper.cpp`)** local voice transcription (zero cloud leakage) |
+| **Visual Attachments** | Text prompts only | **Screenshot streaming** & direct image upload injection into Antigravity IDE |
+| **Documentation Suite** | Basic README | **Comprehensive 10-Module PRD Suite** + Master Agent Guide (`.agents/AGENTS.md`) |
+| **Internationalization** | Basic locales | **Full Multi-Language Support** (`en`, `vi`, `ja`) with unified i18n engine |
+
+> [!TIP]
+> If you find this project useful, please take a moment to also star and support the original upstream repository at **[github.com/optimistengineer/remoat](https://github.com/optimistengineer/remoat)**!

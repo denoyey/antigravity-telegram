@@ -204,3 +204,9 @@ Maintainers and contributors pledge to make participation in the ANTIRLM project
 - **v0.2.12**: Event-Driven DOM mutation monitoring via `MutationObserver` + CDP Binding (<100ms updates, reduced CPU overhead).
 - **v0.2.1**: Per-workspace prompt locking, path traversal symlink hardening (`realpathSync`), HTML entity escape fixes (`&amp;`, `&lt;`, `&gt;`), Windows spawn hang resolution.
 - **v0.2.0**: Initial public release with Forum Topic multi-workspace mapping, local Whisper voice transcription, and SQLite session persistence.
+
+---
+
+## 11. Upstream Lineage & Attribution
+
+This project is a downstream evolution originating from **[optimistengineer/remoat](https://github.com/optimistengineer/remoat)**. Maintainers and contributors must respect and preserve attribution to the original upstream architecture while continuing to expand the project's performance, security, and developer ergonomics.
