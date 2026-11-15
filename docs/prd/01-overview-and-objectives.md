@@ -1,5 +1,5 @@
 # PRD 01: Product Overview & Objectives
-## Antigravity Telegram Remote (ANTIRLM)
+## Antigravity Telegram
 
 ---
 
@@ -24,7 +24,7 @@ Modern AI-assisted coding tools are predominantly tied to the physical desktop o
 
 ### 3. Solution Overview
 
-**ANTIRLM** bridges the Telegram messaging ecosystem directly to the host machine's running Antigravity IDE using standard, local Chrome DevTools Protocol (CDP) WebSocket communication.
+**Antigravity Telegram** bridges the Telegram messaging ecosystem directly to the host machine's running Antigravity IDE using standard, local Chrome DevTools Protocol (CDP) WebSocket communication.
 
 ```
 +------------------+         HTTPS Outbound          +-----------------------+
@@ -42,7 +42,7 @@ Modern AI-assisted coding tools are predominantly tied to the physical desktop o
 ```
 
 - **Zero Cloud Middleman**: The Telegram Bot runs as a local process on the engineer's workstation. Telegram's API is accessed strictly via outbound HTTPS long-polling (`getUpdates`).
-- **Native Browser Instrumentation**: Rather than relying on fragile virtual keyboard events or screen-scraping OCR, ANTIRLM evaluates DOM elements, binds event listeners via CDP, and reads structured assistant state directly.
+- **Native Browser Instrumentation**: Rather than relying on fragile virtual keyboard events or screen-scraping OCR, Antigravity Telegram evaluates DOM elements, binds event listeners via CDP, and reads structured assistant state directly.
 - **Bi-Directional Actionability**: Users can send text, voice notes, or screenshots, and receive live progress streaming, diff inspections, and one-tap approval buttons (`Accept`, `Reject`, `Auto-Accept`).
 
 ---

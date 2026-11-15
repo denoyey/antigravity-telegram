@@ -1,11 +1,11 @@
 # PRD 05: Data Architecture & Persistence
-## Antigravity Telegram Remote (ANTIRLM)
+## Antigravity Telegram
 
 ---
 
 ### 1. Storage Overview
 
-ANTIRLM relies on **SQLite 3** via the high-performance native binding `better-sqlite3`. SQLite provides zero-configuration, ACID-compliant, single-file embedded storage (`antigravity.db`) that operates synchronously with zero network overhead.
+Antigravity Telegram relies on **SQLite 3** via the high-performance native binding `better-sqlite3`. SQLite provides zero-configuration, ACID-compliant, single-file embedded storage (`antigravity.db`) that operates synchronously with zero network overhead.
 
 ---
 

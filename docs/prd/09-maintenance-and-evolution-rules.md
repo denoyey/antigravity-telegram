@@ -1,5 +1,5 @@
 # PRD 09: Maintenance Policy & Documentation Synchronization Rules
-## Antigravity Telegram Remote (ANTIRLM)
+## Antigravity Telegram
 
 ---
 
@@ -44,7 +44,7 @@ Before marking any task complete or committing code:
 
 ### 4. Semantic Versioning & Release Protocol
 
-ANTIRLM follows strict [Semantic Versioning (SemVer 2.0.0)](https://semver.org/):
+Antigravity Telegram follows strict [Semantic Versioning (SemVer 2.0.0)](https://semver.org/):
 - **PATCH (`0.2.x`)**: Bug fixes, security patches, internal refactoring, non-breaking performance optimizations.
 - **MINOR (`0.x.0`)**: New slash commands, UI additions, new optional integrations, backward-compatible feature expansions.
 - **MAJOR (`x.0.0`)**: Breaking architectural changes, schema incompatibility requiring manual migration, or major platform transitions.

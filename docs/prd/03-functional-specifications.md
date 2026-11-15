@@ -1,5 +1,5 @@
 # PRD 03: Functional Specifications
-## Antigravity Telegram Remote (ANTIRLM)
+## Antigravity Telegram
 
 ---
 

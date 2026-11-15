@@ -1,11 +1,11 @@
 # PRD 06: User Experience & Non-AI-Slop Interface Design
-## Antigravity Telegram Remote (ANTIRLM)
+## Antigravity Telegram
 
 ---
 
 ### 1. The Human-Crafted UX Philosophy
 
-A core requirement of ANTIRLM is that all interaction design must feel **human-crafted, focused, and purposeful**, completely rejecting the pattern known as "AI Slop".
+A core requirement of Antigravity Telegram is that all interaction design must feel **human-crafted, focused, and purposeful**, completely rejecting the pattern known as "AI Slop".
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -97,7 +97,7 @@ When an error occurs (such as Antigravity IDE being closed or CDP port unreachab
 #### Bad Example (AI Slop / Cryptic Dump):
 > `Error: connect ECONNREFUSED 127.0.0.1:9222 at TCPConnectWrap.afterConnect [as oncomplete]`
 
-#### ANTIRLM Example (Actionable, Calm):
+#### Antigravity Telegram Example (Actionable, Calm):
 ```text
 ⚠️ Antigravity is not reachable on CDP port 9222.
 

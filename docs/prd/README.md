@@ -1,5 +1,5 @@
 # Product Requirements Document (PRD) Suite
-## Antigravity Telegram Remote (ANTIRLM)
+## Antigravity Telegram
 
 ---
 
@@ -21,13 +21,13 @@
 
 ### Executive Summary
 
-**Antigravity Telegram Remote (ANTIRLM)** is a local-first remote gateway connecting smartphone devices via Telegram to the desktop [Antigravity IDE](https://antigravity.dev). Operating 100% locally on the host machine via the Chrome DevTools Protocol (CDP), ANTIRLM eliminates the requirement for intermediary cloud relays, third-party backend proxies, or external hosted services.
+**Antigravity Telegram** is a local-first remote gateway connecting smartphone devices via Telegram to the desktop [Antigravity IDE](https://antigravity.dev). Operating 100% locally on the host machine via the Chrome DevTools Protocol (CDP), Antigravity Telegram eliminates the requirement for intermediary cloud relays, third-party backend proxies, or external hosted services.
 
 #### Core Value Pillars
 
 ```
 +---------------------------------------------------------------------------------+
-|                                 ANTIRLM CORE                                    |
+|                                 ANTIGRAVITY TELEGRAM CORE                                    |
 +------------------------+-------------------------------+------------------------+
 |       1. PRIVACY       |          2. SPEED             |       3. CONTROL       |
 | 100% Local Execution   | <100ms Event Mutation Updates | Topic-Workspace Bind   |

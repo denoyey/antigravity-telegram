@@ -1,11 +1,11 @@
 # PRD 02: System Architecture & Design
-## Antigravity Telegram Remote (ANTIRLM)
+## Antigravity Telegram
 
 ---
 
 ### 1. Architectural Philosophy
 
-ANTIRLM is engineered around three foundational architectural principles:
+Antigravity Telegram is engineered around three foundational architectural principles:
 
 1. **Strict Three-Tier Separation**:
    - **CLI / Bootstrapping Tier**: Environment checks, configuration discovery, process lockfile acquisition, daemon management.

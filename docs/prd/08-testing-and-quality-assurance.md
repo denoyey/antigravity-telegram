@@ -1,11 +1,11 @@
 # PRD 08: Testing Strategy & Quality Assurance
-## Antigravity Telegram Remote (ANTIRLM)
+## Antigravity Telegram
 
 ---
 
 ### 1. Quality Assurance Philosophy
 
-ANTIRLM operates in a high-concurrency, event-driven environment connecting two independent external systems (Telegram Bot API and Antigravity Chromium DOM). Reliability, zero regressions, and resilience against network jitter are achieved through an exhaustive testing pyramid:
+Antigravity Telegram operates in a high-concurrency, event-driven environment connecting two independent external systems (Telegram Bot API and Antigravity Chromium DOM). Reliability, zero regressions, and resilience against network jitter are achieved through an exhaustive testing pyramid:
 
 ```
                   / \

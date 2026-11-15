@@ -1,11 +1,11 @@
 # PRD 04: Security Architecture & Threat Model
-## Antigravity Telegram Remote (ANTIRLM)
+## Antigravity Telegram
 
 ---
 
 ### 1. Security Architecture Principles
 
-ANTIRLM follows a strict **Defense-in-Depth** and **Zero-Trust** security architecture. Operating as a bridge between an external chat client and a local development workstation requires impenetrable boundaries to ensure no attacker can compromise the host machine, access unauthorized files, or abuse local IDE permissions.
+Antigravity Telegram follows a strict **Defense-in-Depth** and **Zero-Trust** security architecture. Operating as a bridge between an external chat client and a local development workstation requires impenetrable boundaries to ensure no attacker can compromise the host machine, access unauthorized files, or abuse local IDE permissions.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -83,7 +83,7 @@ ANTIRLM follows a strict **Defense-in-Depth** and **Zero-Trust** security archit
 - **Threat Vector**:
   Malicious text containing quotation marks, JavaScript syntax, or template literals injected via `Runtime.evaluate` causing arbitrary code execution in the Chromium renderer process.
 - **Hardened Mitigation (`src/services/cdpService.ts`)**:
-  - ANTIRLM **never** concatenates unescaped user strings directly into JavaScript expression strings.
+  - Antigravity Telegram **never** concatenates unescaped user strings directly into JavaScript expression strings.
   - Message text is injected via the native DevTools protocol method `Input.insertText({ text })`, which streams raw text directly into the DOM input buffer without script interpretation.
   - When DOM evaluation is mandatory (e.g. selector checks), arguments are serialized using `JSON.stringify()` or evaluated as parameterized functions.
 
@@ -113,7 +113,7 @@ ANTIRLM follows a strict **Defense-in-Depth** and **Zero-Trust** security archit
 #### 2.7. Credential Protection & Secret Hygiene (CWE-200, CWE-532)
 - **Zero Credential Logging**: `TELEGRAM_BOT_TOKEN`, user IDs, and file system credentials are never output to stdout, stderr, or log files.
 - **File System Permissions**: On initialization, the setup wizard explicitly sets restrictive permissions (`chmod 600`) on `.env` and `config.json`.
-- **Zero Cloud Telemetry**: ANTIRLM includes zero analytics trackers, telemetry endpoints, or cloud synchronizers. All logs remain on local disk.
+- **Zero Cloud Telemetry**: Antigravity Telegram includes zero analytics trackers, telemetry endpoints, or cloud synchronizers. All logs remain on local disk.
 
 #### 2.8. Prompt Injection & AI Safety (OWASP Top 10 for LLMs: LLM01, LLM02)
 - **Threat Vector**:

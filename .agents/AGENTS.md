@@ -1,4 +1,4 @@
-# Antigravity Telegram (ANTIRLM) - Master Agent Guide
+# Antigravity Telegram - Master Agent Guide
 ## Project Architecture, Security Standards, and Operational Guidelines
 
 > **Target Audience**: AI Agents (Antigravity, Claude Code, Cursor, Copilot) and Human Core Contributors.  
@@ -8,7 +8,7 @@
 
 ## 1. Project Identity & Mission
 
-**Antigravity Telegram (ANTIRLM)** is a local-first remote gateway connecting smartphone devices via Telegram to the desktop [Antigravity IDE](https://antigravity.dev). Operating 100% locally on the host machine via the Chrome DevTools Protocol (CDP), ANTIRLM eliminates the requirement for intermediary cloud relays, third-party backend proxies, or external hosted services.
+**Antigravity Telegram** is a local-first remote gateway connecting smartphone devices via Telegram to the desktop [Antigravity IDE](https://antigravity.dev). Operating 100% locally on the host machine via the Chrome DevTools Protocol (CDP), Antigravity Telegram eliminates the requirement for intermediary cloud relays, third-party backend proxies, or external hosted services.
 
 ### Core Value Pillars
 
@@ -45,11 +45,11 @@
 
 ## 3. High-Level Architecture & Layer Breakdown
 
-ANTIRLM follows a strict three-tier architecture: **CLI → Bot Gateway → Domain Services & CDP Engine**.
+Antigravity Telegram follows a strict three-tier architecture: **CLI → Bot Gateway → Domain Services & CDP Engine**.
 
 ```
 +-----------------------------------------------------------------------------------------+
-|                                    ANTIRLM TOPOLOGY                                     |
+|                               ANTIGRAVITY TELEGRAM TOPOLOGY                             |
 +-----------------------------------------------------------------------------------------+
 |  [ Telegram App (Mobile) ]                                                              |
 |            ^                                                                            |
@@ -119,7 +119,7 @@ locales/                    # Translations (en, ja, vi)
 
 ## 5. Security & Threat Model (Full Defense-in-Depth)
 
-ANTIRLM implements exhaustive safeguards against legacy and modern attack vectors:
+Antigravity Telegram implements exhaustive safeguards against legacy and modern attack vectors:
 
 ### 5.1. Network & Access Security
 - **No Inbound Listening Ports**: The bot connects outward to Telegram via long-polling. No open ports, no port-forwarding, no webhook vulnerabilities.
@@ -186,7 +186,7 @@ npm start -- setup       # Run interactive setup wizard
 
 ## 8. Responsible Security Disclosure Policy
 
-If you discover a security vulnerability in ANTIRLM, please report it responsibly:
+If you discover a security vulnerability in Antigravity Telegram, please report it responsibly:
 - **Private Issue / Advisory**: Open a private advisory on GitHub or contact the maintainers directly.
 - **SLA**: Acknowledged within 48 hours; critical security patches released within 7 days.
 - **Never open public issues for unpatched vulnerabilities.**
@@ -195,7 +195,7 @@ If you discover a security vulnerability in ANTIRLM, please report it responsibl
 
 ## 9. Contributor Code of Conduct
 
-Maintainers and contributors pledge to make participation in the ANTIRLM project a harassment-free, welcoming, and productive experience for everyone regardless of background, identity, or experience level. Disagreements must be handled constructively through respectful, evidence-based technical discourse.
+Maintainers and contributors pledge to make participation in the Antigravity Telegram project a harassment-free, welcoming, and productive experience for everyone regardless of background, identity, or experience level. Disagreements must be handled constructively through respectful, evidence-based technical discourse.
 
 ---
 

@@ -1,15 +1,15 @@
 # PRD 07: OOP Architecture & Reusability Framework
-## Antigravity Telegram Remote (ANTIRLM)
+## Antigravity Telegram
 
 ---
 
 ### 1. Object-Oriented Design Principles
 
-To ensure high maintainability, testability, and code reusability across projects, ANTIRLM adheres strictly to SOLID object-oriented design patterns:
+To ensure high maintainability, testability, and code reusability across projects, Antigravity Telegram adheres strictly to SOLID object-oriented design patterns:
 
 ```
 +-----------------------------------------------------------------------------------------+
-|                                    SOLID IN ANTIRLM                                     |
+|                                    SOLID IN ANTIGRAVITY TELEGRAM                                     |
 +-------------------+---------------------------------------------------------------------+
 | Single Resp (S)   | Each service or repository handles exactly one domain responsibility|
 | Open/Closed (O)   | Extensible via abstract base classes and interfaces without hacking |
