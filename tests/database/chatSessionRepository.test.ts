@@ -102,11 +102,11 @@ describe('ChatSessionRepository', () => {
         it('updates the display name and sets is_renamed to true', () => {
             repo.create({ channelId: 'ch-1', categoryId: 'cat-1', workspacePath: 'proj', sessionNumber: 1, guildId: 'guild-1' });
 
-            const updated = repo.updateDisplayName('ch-1', 'React認証バグ修正');
+            const updated = repo.updateDisplayName('ch-1', 'Fix React authentication bug');
             expect(updated).toBe(true);
 
             const found = repo.findByChannelId('ch-1');
-            expect(found?.displayName).toBe('React認証バグ修正');
+            expect(found?.displayName).toBe('Fix React authentication bug');
             expect(found?.isRenamed).toBe(true);
         });
 

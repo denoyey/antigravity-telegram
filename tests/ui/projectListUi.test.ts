@@ -55,7 +55,7 @@ describe('projectListUi', () => {
         it('returns empty keyboard for zero workspaces', () => {
             const { text, keyboard } = buildProjectListUI([], 0);
 
-            expect(text).toContain('Không tìm thấy dự án nào');
+            expect(text).toContain('No projects found');
             expect(keyboard).toBeInstanceOf(InlineKeyboard);
         });
 
@@ -63,7 +63,7 @@ describe('projectListUi', () => {
             const workspaces = makeWorkspaces(5);
             const { text, keyboard } = buildProjectListUI(workspaces, 0);
 
-            expect(text).toContain('Dự án');
+            expect(text).toContain('Projects');
             for (const ws of workspaces) {
                 expect(text).toContain(ws);
             }
@@ -74,7 +74,7 @@ describe('projectListUi', () => {
             const workspaces = makeWorkspaces(5);
             const { text } = buildProjectListUI(workspaces, 0);
 
-            expect(text).not.toContain('Trang');
+            expect(text).not.toContain('Page');
         });
 
         it('shows page info for multi-page workspaces', () => {
@@ -82,8 +82,8 @@ describe('projectListUi', () => {
             const workspaces = makeWorkspaces(count);
             const { text } = buildProjectListUI(workspaces, 0);
 
-            expect(text).toContain('Trang 1 / 2');
-            expect(text).toContain(`${count} tổng số dự án`);
+            expect(text).toContain('Page 1 / 2');
+            expect(text).toContain(`${count} total projects`);
         });
 
         it('second page shows remaining items', () => {
@@ -91,7 +91,7 @@ describe('projectListUi', () => {
             const workspaces = makeWorkspaces(count);
             const { text } = buildProjectListUI(workspaces, 1);
 
-            expect(text).toContain('Trang 2 / 2');
+            expect(text).toContain('Page 2 / 2');
             expect(text).toContain(workspaces[ITEMS_PER_PAGE]);
         });
 
@@ -99,21 +99,21 @@ describe('projectListUi', () => {
             const workspaces = makeWorkspaces(ITEMS_PER_PAGE + 5);
             const { text } = buildProjectListUI(workspaces, 100);
 
-            expect(text).toContain('Trang 2 / 2');
+            expect(text).toContain('Page 2 / 2');
         });
 
         it('clamps negative page to 0', () => {
             const workspaces = makeWorkspaces(ITEMS_PER_PAGE + 5);
             const { text } = buildProjectListUI(workspaces, -5);
 
-            expect(text).toContain('Trang 1 / 2');
+            expect(text).toContain('Page 1 / 2');
         });
 
         it('handles exactly ITEMS_PER_PAGE workspaces (single page)', () => {
             const workspaces = makeWorkspaces(ITEMS_PER_PAGE);
             const { text } = buildProjectListUI(workspaces, 0);
 
-            expect(text).not.toContain('Trang');
+            expect(text).not.toContain('Page');
         });
     });
 });

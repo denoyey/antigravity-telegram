@@ -81,7 +81,7 @@ describe('ChatSessionService', () => {
         });
 
         it('returns ok: false when a CDP call throws an exception', async () => {
-            mockCdpService.call.mockRejectedValue(new Error('WebSocket切断'));
+            mockCdpService.call.mockRejectedValue(new Error('WebSocket disconnected'));
 
             const result = await service.startNewChat(mockCdpService);
 
@@ -108,12 +108,12 @@ describe('ChatSessionService', () => {
     describe('getCurrentSessionInfo()', () => {
         it('retrieves the chat title from the Cascade panel header', async () => {
             mockCdpService.call.mockResolvedValue({
-                result: { value: { title: 'テストチャット', hasActiveChat: true } }
+                result: { value: { title: 'Test chat', hasActiveChat: true } }
             });
 
             const info = await service.getCurrentSessionInfo(mockCdpService);
 
-            expect(info.title).toBe('テストチャット');
+            expect(info.title).toBe('Test chat');
             expect(info.hasActiveChat).toBe(true);
         });
 
@@ -129,7 +129,7 @@ describe('ChatSessionService', () => {
         });
 
         it('returns fallback values when a CDP call throws an exception', async () => {
-            mockCdpService.call.mockRejectedValue(new Error('CDPエラー'));
+            mockCdpService.call.mockRejectedValue(new Error('CDP error'));
 
             const info = await service.getCurrentSessionInfo(mockCdpService);
 

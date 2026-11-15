@@ -9,15 +9,15 @@ describe('TitleGeneratorService', () => {
         });
 
         it('generates a short title from the prompt', async () => {
-            const title = await service.generateTitle('React認証バグを修正したい');
+            const title = await service.generateTitle('Fix React authentication bug');
             expect(title).toBeTruthy();
             expect(title.length).toBeGreaterThan(0);
             expect(title.length).toBeLessThanOrEqual(80);
         });
 
         it('removes workspace prefix', async () => {
-            const title = await service.generateTitle('[ワークスペース: /Users/test/Code/project]\nReactの認証バグ');
-            expect(title).not.toContain('ワークスペース');
+            const title = await service.generateTitle('[workspace: /Users/test/Code/project]\nFix React authentication bug');
+            expect(title).not.toContain('workspace');
             expect(title).toBeTruthy();
         });
 
@@ -85,7 +85,7 @@ describe('TitleGeneratorService', () => {
             } as any;
 
             const service = new TitleGeneratorService();
-            const title = await service.generateTitle('テスト用プロンプト', mockCdp);
+            const title = await service.generateTitle('Sample test prompt', mockCdp);
             expect(title).toBeTruthy();
             expect(title).not.toBe('untitled');
         });
@@ -97,7 +97,7 @@ describe('TitleGeneratorService', () => {
             } as any;
 
             const service = new TitleGeneratorService();
-            const title = await service.generateTitle('テスト用プロンプト', mockCdp);
+            const title = await service.generateTitle('Sample test prompt', mockCdp);
             expect(title).toBeTruthy();
         });
     });

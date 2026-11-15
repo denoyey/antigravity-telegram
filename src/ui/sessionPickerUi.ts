@@ -15,13 +15,13 @@ export function buildSessionPickerUI(
 ): { text: string; keyboard: InlineKeyboard } {
     if (sessions.length === 0) {
         return {
-            text: `<b>🔗 Tham gia phiên</b>\n\nKhông tìm thấy phiên nào trong bảng điều khiển của Antigravity.`,
+            text: `<b>🔗 Join Session</b>\n\nNo active sessions found in Antigravity.`,
             keyboard: new InlineKeyboard(),
         };
     }
 
-    const text = `<b>🔗 Tham gia phiên</b>\n\n` +
-        `Chọn một phiên để tham gia (tìm thấy ${sessions.length} phiên)`;
+    const text = `<b>🔗 Join Session</b>\n\n` +
+        `Select a session to join (${sessions.length} session(s) found):`;
 
     const keyboard = new InlineKeyboard();
     const pageItems = sessions.slice(0, MAX_SELECT_OPTIONS);

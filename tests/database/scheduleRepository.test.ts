@@ -40,7 +40,7 @@ describe('ScheduleRepository', () => {
         it('saves the cron expression and prompt, and returns the ID', () => {
             const record = repo.create({
                 cronExpression: '0 9 * * *',
-                prompt: 'テストプロンプト: ビルドを実行',
+                prompt: 'Test prompt: run build',
                 workspacePath: '/home/user/project',
                 enabled: true,
             });
@@ -48,7 +48,7 @@ describe('ScheduleRepository', () => {
             expect(record.id).toBeDefined();
             expect(typeof record.id).toBe('number');
             expect(record.cronExpression).toBe('0 9 * * *');
-            expect(record.prompt).toBe('テストプロンプト: ビルドを実行');
+            expect(record.prompt).toBe('Test prompt: run build');
             expect(record.workspacePath).toBe('/home/user/project');
             expect(record.enabled).toBe(true);
         });
@@ -56,13 +56,13 @@ describe('ScheduleRepository', () => {
         it('can save multiple schedules', () => {
             repo.create({
                 cronExpression: '0 9 * * *',
-                prompt: '朝のビルド',
+                prompt: 'Morning build',
                 workspacePath: '/project1',
                 enabled: true,
             });
             repo.create({
                 cronExpression: '0 18 * * *',
-                prompt: '夕方のテスト',
+                prompt: 'Evening tests',
                 workspacePath: '/project2',
                 enabled: true,
             });
@@ -76,21 +76,21 @@ describe('ScheduleRepository', () => {
         it('retrieves all saved schedules', () => {
             repo.create({
                 cronExpression: '*/5 * * * *',
-                prompt: '5分毎のヘルスチェック',
+                prompt: '5-minute health check',
                 workspacePath: '/service',
                 enabled: true,
             });
             repo.create({
                 cronExpression: '0 0 * * 0',
-                prompt: '毎週日曜の定期メンテナンス',
+                prompt: 'Weekly Sunday maintenance',
                 workspacePath: '/maintenance',
                 enabled: false,
             });
 
             const all = repo.findAll();
             expect(all).toHaveLength(2);
-            expect(all[0].prompt).toBe('5分毎のヘルスチェック');
-            expect(all[1].prompt).toBe('毎週日曜の定期メンテナンス');
+            expect(all[0].prompt).toBe('5-minute health check');
+            expect(all[1].prompt).toBe('Weekly Sunday maintenance');
             expect(all[1].enabled).toBe(false);
         });
 
@@ -104,7 +104,7 @@ describe('ScheduleRepository', () => {
         it('retrieves the schedule with the specified ID', () => {
             const created = repo.create({
                 cronExpression: '30 12 * * *',
-                prompt: 'お昼のリマインダー',
+                prompt: 'Lunch reminder',
                 workspacePath: '/reminder',
                 enabled: true,
             });
@@ -112,7 +112,7 @@ describe('ScheduleRepository', () => {
             const found = repo.findById(created.id);
             expect(found).toBeDefined();
             expect(found!.cronExpression).toBe('30 12 * * *');
-            expect(found!.prompt).toBe('お昼のリマインダー');
+            expect(found!.prompt).toBe('Lunch reminder');
         });
 
         it('returns undefined for a non-existent ID', () => {
@@ -125,20 +125,20 @@ describe('ScheduleRepository', () => {
         it('retrieves only schedules with enabled=true', () => {
             repo.create({
                 cronExpression: '0 9 * * *',
-                prompt: '有効なジョブ',
+                prompt: 'Active job',
                 workspacePath: '/active',
                 enabled: true,
             });
             repo.create({
                 cronExpression: '0 18 * * *',
-                prompt: '無効なジョブ',
+                prompt: 'Inactive job',
                 workspacePath: '/inactive',
                 enabled: false,
             });
 
             const enabled = repo.findEnabled();
             expect(enabled).toHaveLength(1);
-            expect(enabled[0].prompt).toBe('有効なジョブ');
+            expect(enabled[0].prompt).toBe('Active job');
         });
     });
 
@@ -146,7 +146,7 @@ describe('ScheduleRepository', () => {
         it('deletes the schedule with the specified ID', () => {
             const created = repo.create({
                 cronExpression: '0 0 * * *',
-                prompt: '削除対象',
+                prompt: 'Item to delete',
                 workspacePath: '/delete-me',
                 enabled: true,
             });
@@ -168,7 +168,7 @@ describe('ScheduleRepository', () => {
         it('can toggle enabled/disabled state', () => {
             const created = repo.create({
                 cronExpression: '0 9 * * *',
-                prompt: '更新対象',
+                prompt: 'Item to update',
                 workspacePath: '/update-me',
                 enabled: true,
             });
@@ -183,7 +183,7 @@ describe('ScheduleRepository', () => {
         it('can update the cron expression', () => {
             const created = repo.create({
                 cronExpression: '0 9 * * *',
-                prompt: 'テスト',
+                prompt: 'Test prompt',
                 workspacePath: '/test',
                 enabled: true,
             });

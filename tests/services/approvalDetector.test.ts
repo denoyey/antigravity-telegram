@@ -48,9 +48,9 @@ describe('ApprovalDetector - approval button detection and remote execution', ()
     /** Helper to generate ApprovalInfo for testing */
     function makeApprovalInfo(overrides: Partial<ApprovalInfo> = {}): ApprovalInfo {
         return {
-            approveText: '許可',
-            denyText: '拒否',
-            description: 'ファイルへの書き込みを許可しますか？',
+            approveText: 'Allow',
+            denyText: 'Deny',
+            description: 'Allow writing to file?',
             ...overrides,
         };
     }
@@ -78,9 +78,9 @@ describe('ApprovalDetector - approval button detection and remote execution', ()
         expect(onApprovalRequired).toHaveBeenCalledTimes(1);
         expect(onApprovalRequired).toHaveBeenCalledWith(
             expect.objectContaining({
-                approveText: '許可',
-                denyText: '拒否',
-                description: expect.stringContaining('ファイルへの書き込み'),
+                approveText: 'Allow',
+                denyText: 'Deny',
+                description: expect.stringContaining('Allow writing to file'),
             })
         );
     });
@@ -276,7 +276,7 @@ describe('ApprovalDetector - approval button detection and remote execution', ()
     // ──────────────────────────────────────────────────────
     it('continues monitoring even when a CDP error occurs', async () => {
         const onApprovalRequired = jest.fn();
-        const mockInfo = makeApprovalInfo({ description: 'エラー後リカバリ' });
+        const mockInfo = makeApprovalInfo({ description: 'Recovery after error' });
 
         mockCdpService.call
             .mockRejectedValueOnce(new Error('CDP error'))  // 1st call: error
@@ -289,11 +289,11 @@ describe('ApprovalDetector - approval button detection and remote execution', ()
         });
         detector.start();
 
-        await jest.advanceTimersByTimeAsync(500); // エラー回
-        await jest.advanceTimersByTimeAsync(500); // 成功回
+        await jest.advanceTimersByTimeAsync(500); // Error iteration
+        await jest.advanceTimersByTimeAsync(500); // Success iteration
 
         expect(onApprovalRequired).toHaveBeenCalledWith(
-            expect.objectContaining({ approveText: '許可' })
+            expect.objectContaining({ approveText: 'Allow' })
         );
     });
 
@@ -304,7 +304,7 @@ describe('ApprovalDetector - approval button detection and remote execution', ()
         const mockInfo = makeApprovalInfo({
             approveText: 'Accept',
             denyText: 'Decline',
-            description: 'テストアクション',
+            description: 'Test action',
         });
 
         mockCdpService.call.mockResolvedValue({
@@ -327,7 +327,7 @@ describe('ApprovalDetector - approval button detection and remote execution', ()
         expect(info).not.toBeNull();
         expect(info?.approveText).toBe('Accept');
         expect(info?.denyText).toBe('Decline');
-        expect(info?.description).toBe('テストアクション');
+        expect(info?.description).toBe('Test action');
     });
 
     // ──────────────────────────────────────────────────────
@@ -358,7 +358,7 @@ describe('ApprovalDetector - approval button detection and remote execution', ()
     // Test 10: Button text propagates correctly through the detection-to-click flow
     // ──────────────────────────────────────────────────────
     it('approveButton() without arguments uses the detected approveText', async () => {
-        const mockInfo = makeApprovalInfo({ approveText: '承認する' });
+        const mockInfo = makeApprovalInfo({ approveText: 'Approve' });
 
         // 1st call: for polling (detection)
         mockCdpService.call
@@ -383,7 +383,7 @@ describe('ApprovalDetector - approval button detection and remote execution', ()
         expect(mockCdpService.call).toHaveBeenLastCalledWith(
             'Runtime.evaluate',
             expect.objectContaining({
-                expression: expect.stringContaining('承認する'),
+                expression: expect.stringContaining('Approve'),
             })
         );
     });
@@ -392,7 +392,7 @@ describe('ApprovalDetector - approval button detection and remote execution', ()
     // Test 11: denyButton() without arguments uses the detected denyText
     // ──────────────────────────────────────────────────────
     it('denyButton() without arguments uses the detected denyText', async () => {
-        const mockInfo = makeApprovalInfo({ denyText: 'キャンセル' });
+        const mockInfo = makeApprovalInfo({ denyText: 'Cancel' });
 
         mockCdpService.call
             .mockResolvedValueOnce({ result: { value: mockInfo } })
@@ -413,7 +413,7 @@ describe('ApprovalDetector - approval button detection and remote execution', ()
         expect(mockCdpService.call).toHaveBeenLastCalledWith(
             'Runtime.evaluate',
             expect.objectContaining({
-                expression: expect.stringContaining('キャンセル'),
+                expression: expect.stringContaining('Cancel'),
             })
         );
     });

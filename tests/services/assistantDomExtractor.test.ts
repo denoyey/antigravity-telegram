@@ -20,7 +20,7 @@ describe('assistantDomExtractor', () => {
         const payload = buildPayload([
             {
                 kind: 'assistant-body',
-                text: '最終回答: 1ドル=154.8円です。',
+                text: 'Final answer: 1 USD = 1.08 EUR.',
                 role: 'assistant',
                 messageIndex: 9,
                 domPath: '[data-message-role="assistant"]:nth-of-type(9)',
@@ -64,7 +64,7 @@ describe('assistantDomExtractor', () => {
 
         const result = classifyAssistantSegments(payload);
 
-        expect(result.finalOutputText).toBe('最終回答: 1ドル=154.8円です。');
+        expect(result.finalOutputText).toBe('Final answer: 1 USD = 1.08 EUR.');
         expect(result.activityLines).toEqual([
             'jina-mcp-server / search_web',
             'Full output written to output.txt#L1-10',
@@ -82,14 +82,14 @@ describe('assistantDomExtractor', () => {
         const payload = buildPayload([
             {
                 kind: 'assistant-body',
-                text: '前半です。',
+                text: 'First part.',
                 role: 'assistant',
                 messageIndex: 3,
                 domPath: 'article:nth-child(3)',
             },
             {
                 kind: 'assistant-body',
-                text: '後半です。',
+                text: 'Second part.',
                 role: 'assistant',
                 messageIndex: 3,
                 domPath: 'article:nth-child(3) p:last-child',
@@ -105,7 +105,7 @@ describe('assistantDomExtractor', () => {
 
         const result = classifyAssistantSegments(payload);
 
-        expect(result.finalOutputText).toBe('前半です。\n\n後半です。');
+        expect(result.finalOutputText).toBe('First part.\n\nSecond part.');
         expect(result.activityLines).toEqual(['mcp.search']);
         expect(result.feedback).toEqual([]);
     });
@@ -332,20 +332,20 @@ describe('assistantDomExtractor', () => {
             // Ordered and unordered lists
             const ol = document.createElement('ol');
             const li1 = document.createElement('li');
-            li1.textContent = '最初の項目';
+            li1.textContent = 'First item';
             const li2 = document.createElement('li');
-            li2.textContent = '次の項目';
+            li2.textContent = 'Second item';
             ol.appendChild(li1);
             ol.appendChild(li2);
 
             const ul = document.createElement('ul');
             const li3 = document.createElement('li');
-            li3.textContent = '箇条書き1';
+            li3.textContent = 'Bullet 1';
             ul.appendChild(li3);
 
             // Paragraph with line break
             const p = document.createElement('p');
-            p.textContent = '改行付き\nの段落';
+            p.textContent = 'Paragraph with\nline break';
 
             // File reference (assuming path is stored via title or aria-label)
             const fileRef = document.createElement('div');
@@ -380,10 +380,10 @@ describe('assistantDomExtractor', () => {
             const output = result.finalOutputText;
 
             // Expected: Markdown structure is preserved
-            expect(output).toContain('1. 最初の項目');
-            expect(output).toContain('2. 次の項目');
-            expect(output).toContain('- 箇条書き1');
-            expect(output).toContain('改行付き\nの段落');
+            expect(output).toContain('1. First item');
+            expect(output).toContain('2. Second item');
+            expect(output).toContain('- Bullet 1');
+            expect(output).toContain('Paragraph with\nline break');
 
             // Expected: file path is restored from title attribute to "src/bot/index.ts:54"
             expect(output).toContain('src/bot/index.ts:54');

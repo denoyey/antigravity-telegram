@@ -27,37 +27,37 @@ describe('TemplateRepository', () => {
     describe('create - save template', () => {
         it('saves the template name and prompt, and returns the ID', () => {
             const result = repo.create({
-                name: 'PR作成',
-                prompt: 'PRを作成してください。変更点をまとめてください。',
+                name: 'CreatePR',
+                prompt: 'Please create a PR and summarize changes.',
             });
             expect(result.id).toBeDefined();
-            expect(result.name).toBe('PR作成');
-            expect(result.prompt).toBe('PRを作成してください。変更点をまとめてください。');
+            expect(result.name).toBe('CreatePR');
+            expect(result.prompt).toBe('Please create a PR and summarize changes.');
         });
 
         it('can save multiple templates', () => {
-            repo.create({ name: 'PR作成', prompt: 'PRを作成して' });
-            repo.create({ name: 'エラー調査', prompt: 'エラーを調査して' });
+            repo.create({ name: 'CreatePR', prompt: 'Create PR' });
+            repo.create({ name: 'InvestigateError', prompt: 'Investigate error' });
             const all = repo.findAll();
             expect(all).toHaveLength(2);
         });
 
         it('cannot save duplicate templates with the same name', () => {
-            repo.create({ name: 'PR作成', prompt: 'PRを作成して' });
+            repo.create({ name: 'CreatePR', prompt: 'Create PR' });
             expect(() => {
-                repo.create({ name: 'PR作成', prompt: '別のプロンプト' });
+                repo.create({ name: 'CreatePR', prompt: 'Another prompt' });
             }).toThrow();
         });
     });
 
     describe('findAll - retrieve all templates', () => {
         it('retrieves all saved templates', () => {
-            repo.create({ name: 'PR作成', prompt: 'PRを作成して' });
-            repo.create({ name: 'エラー調査', prompt: 'エラーを調査して' });
+            repo.create({ name: 'CreatePR', prompt: 'Create PR' });
+            repo.create({ name: 'InvestigateError', prompt: 'Investigate error' });
             const all = repo.findAll();
             expect(all).toHaveLength(2);
-            expect(all[0].name).toBe('PR作成');
-            expect(all[1].name).toBe('エラー調査');
+            expect(all[0].name).toBe('CreatePR');
+            expect(all[1].name).toBe('InvestigateError');
         });
 
         it('returns an empty array when there are no templates', () => {
@@ -68,43 +68,43 @@ describe('TemplateRepository', () => {
 
     describe('findByName - retrieve template by name', () => {
         it('retrieves the template with the specified name', () => {
-            repo.create({ name: 'PR作成', prompt: 'PRを作成して' });
-            const found = repo.findByName('PR作成');
+            repo.create({ name: 'CreatePR', prompt: 'Create PR' });
+            const found = repo.findByName('CreatePR');
             expect(found).toBeDefined();
-            expect(found?.name).toBe('PR作成');
+            expect(found?.name).toBe('CreatePR');
         });
 
         it('returns undefined for a non-existent name', () => {
-            const found = repo.findByName('存在しないテンプレート');
+            const found = repo.findByName('nonexistent');
             expect(found).toBeUndefined();
         });
     });
 
     describe('delete - delete template', () => {
         it('deletes the template with the specified name', () => {
-            repo.create({ name: 'PR作成', prompt: 'PRを作成して' });
-            const deleted = repo.deleteByName('PR作成');
+            repo.create({ name: 'CreatePR', prompt: 'Create PR' });
+            const deleted = repo.deleteByName('CreatePR');
             expect(deleted).toBe(true);
-            expect(repo.findByName('PR作成')).toBeUndefined();
+            expect(repo.findByName('CreatePR')).toBeUndefined();
         });
 
         it('returns false when deleting a non-existent name', () => {
-            const deleted = repo.deleteByName('存在しない');
+            const deleted = repo.deleteByName('nonexistent');
             expect(deleted).toBe(false);
         });
     });
 
     describe('update - update template', () => {
         it('can update the prompt', () => {
-            repo.create({ name: 'PR作成', prompt: 'PRを作成して' });
-            const updated = repo.updateByName('PR作成', { prompt: '新しいPR作成プロンプト' });
+            repo.create({ name: 'CreatePR', prompt: 'Create PR' });
+            const updated = repo.updateByName('CreatePR', { prompt: 'New PR prompt' });
             expect(updated).toBe(true);
-            const found = repo.findByName('PR作成');
-            expect(found?.prompt).toBe('新しいPR作成プロンプト');
+            const found = repo.findByName('CreatePR');
+            expect(found?.prompt).toBe('New PR prompt');
         });
 
         it('returns false when updating a non-existent name', () => {
-            const updated = repo.updateByName('存在しない', { prompt: '新しいプロンプト' });
+            const updated = repo.updateByName('nonexistent', { prompt: 'New prompt' });
             expect(updated).toBe(false);
         });
     });

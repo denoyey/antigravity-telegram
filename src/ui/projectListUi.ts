@@ -28,7 +28,7 @@ export function buildProjectListUI(
 
     if (workspaces.length === 0) {
         return {
-            text: `<b>📁 Dự án</b>\n\nKhông tìm thấy dự án nào.`,
+            text: `<b>📁 Projects</b>\n\nNo projects found.`,
             keyboard: new InlineKeyboard(),
         };
     }
@@ -41,12 +41,12 @@ export function buildProjectListUI(
         `${start + i + 1}. ${escapeHtml(ws)}`,
     );
 
-    let text = `<b>📁 Dự án</b>\n\n` +
-        `Chọn một dự án để tự động tạo topic và phiên làm việc` + `\n\n` +
+    let text = `<b>📁 Projects</b>\n\n` +
+        `Select a project to bind this chat or create a forum topic:\n\n` +
         lines.join('\n');
 
     if (totalPages > 1) {
-        text += `\n\n<i>Trang ${safePage + 1} / ${totalPages} (${workspaces.length} tổng số dự án)</i>`;
+        text += `\n\n<i>Page ${safePage + 1} / ${totalPages} (${workspaces.length} total projects)</i>`;
     }
 
     const keyboard = new InlineKeyboard();
@@ -58,10 +58,10 @@ export function buildProjectListUI(
 
     if (totalPages > 1) {
         if (safePage > 0) {
-            keyboard.text(`◀ Trước`, `${PROJECT_PAGE_PREFIX}:${safePage - 1}`);
+            keyboard.text(`◀ Prev`, `${PROJECT_PAGE_PREFIX}:${safePage - 1}`);
         }
         if (safePage < totalPages - 1) {
-            keyboard.text(`Tiếp ▶`, `${PROJECT_PAGE_PREFIX}:${safePage + 1}`);
+            keyboard.text(`Next ▶`, `${PROJECT_PAGE_PREFIX}:${safePage + 1}`);
         }
         keyboard.row();
     }

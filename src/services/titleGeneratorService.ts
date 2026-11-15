@@ -99,10 +99,10 @@ export class TitleGeneratorService extends BaseService {
     }
 
     /**
-     * Strip the workspace prefix
+     * Strip the workspace prefix (English or localized)
      */
     private stripWorkspacePrefix(prompt: string): string {
-        return prompt.replace(/^\[ワークスペース:.*?\]\n?/, '');
+        return prompt.replace(/^\[(?:workspace|ワークスペース):.*?\]\n?/i, '');
     }
 
     /**

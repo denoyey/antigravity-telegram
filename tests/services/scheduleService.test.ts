@@ -47,14 +47,14 @@ describe('ScheduleService', () => {
                 {
                     id: 1,
                     cronExpression: '0 9 * * *',
-                    prompt: '朝のビルド',
+                    prompt: 'Morning build',
                     workspacePath: '/project1',
                     enabled: true,
                 },
                 {
                     id: 2,
                     cronExpression: '0 18 * * *',
-                    prompt: '夕方のテスト',
+                    prompt: 'Evening tests',
                     workspacePath: '/project2',
                     enabled: true,
                 },
@@ -106,7 +106,7 @@ describe('ScheduleService', () => {
             const created: ScheduleRecord = {
                 id: 1,
                 cronExpression: '*/10 * * * *',
-                prompt: '10分毎のチェック',
+                prompt: '10-minute check',
                 workspacePath: '/service',
                 enabled: true,
             };
@@ -115,7 +115,7 @@ describe('ScheduleService', () => {
             const jobCallback = jest.fn();
             const result = scheduleService.addSchedule(
                 '*/10 * * * *',
-                '10分毎のチェック',
+                '10-minute check',
                 '/service',
                 jobCallback
             );
@@ -125,7 +125,7 @@ describe('ScheduleService', () => {
             // Saved to DB
             expect(mockRepo.create).toHaveBeenCalledWith({
                 cronExpression: '*/10 * * * *',
-                prompt: '10分毎のチェック',
+                prompt: '10-minute check',
                 workspacePath: '/service',
                 enabled: true,
             });
@@ -142,7 +142,7 @@ describe('ScheduleService', () => {
             expect(() => {
                 scheduleService.addSchedule(
                     'invalid-cron',
-                    'テスト',
+                    'Test',
                     '/test',
                     jobCallback
                 );
@@ -162,13 +162,13 @@ describe('ScheduleService', () => {
             mockRepo.create.mockReturnValue({
                 id: 5,
                 cronExpression: '0 6 * * *',
-                prompt: '朝のジョブ',
+                prompt: 'Morning job',
                 workspacePath: '/morning',
                 enabled: true,
             });
 
             const jobCallback = jest.fn();
-            scheduleService.addSchedule('0 6 * * *', '朝のジョブ', '/morning', jobCallback);
+            scheduleService.addSchedule('0 6 * * *', 'Morning job', '/morning', jobCallback);
 
             // Delete
             mockRepo.delete.mockReturnValue(true);
@@ -201,17 +201,17 @@ describe('ScheduleService', () => {
 
             mockRepo.create
                 .mockReturnValueOnce({
-                    id: 1, cronExpression: '0 9 * * *', prompt: 'テスト1',
+                    id: 1, cronExpression: '0 9 * * *', prompt: 'Test 1',
                     workspacePath: '/p1', enabled: true,
                 })
                 .mockReturnValueOnce({
-                    id: 2, cronExpression: '0 18 * * *', prompt: 'テスト2',
+                    id: 2, cronExpression: '0 18 * * *', prompt: 'Test 2',
                     workspacePath: '/p2', enabled: true,
                 });
 
             const jobCallback = jest.fn();
-            scheduleService.addSchedule('0 9 * * *', 'テスト1', '/p1', jobCallback);
-            scheduleService.addSchedule('0 18 * * *', 'テスト2', '/p2', jobCallback);
+            scheduleService.addSchedule('0 9 * * *', 'Test 1', '/p1', jobCallback);
+            scheduleService.addSchedule('0 18 * * *', 'Test 2', '/p2', jobCallback);
 
             scheduleService.stopAll();
 
@@ -223,8 +223,8 @@ describe('ScheduleService', () => {
     describe('listSchedules - retrieve schedule list', () => {
         it('retrieves all schedules from DB', () => {
             const schedules: ScheduleRecord[] = [
-                { id: 1, cronExpression: '0 9 * * *', prompt: 'ジョブ1', workspacePath: '/p1', enabled: true },
-                { id: 2, cronExpression: '0 18 * * *', prompt: 'ジョブ2', workspacePath: '/p2', enabled: false },
+                { id: 1, cronExpression: '0 9 * * *', prompt: 'Job 1', workspacePath: '/p1', enabled: true },
+                { id: 2, cronExpression: '0 18 * * *', prompt: 'Job 2', workspacePath: '/p2', enabled: false },
             ];
             mockRepo.findAll.mockReturnValue(schedules);
 
