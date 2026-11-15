@@ -5,7 +5,21 @@
 
 ### 1. Command Catalog & Interactions
 
-All bot interactions occur either via standard slash commands or natural conversational messages sent within Telegram Forum Topics or direct chats.
+#### 1.1. Host CLI Commands & Execution Vectors
+
+Antigravity Telegram provides a unified CLI entry point (`antigravity-telegram` / `antigravity-telegram-remote`) supporting three execution vectors:
+1. **Global Binary** (`npm install -g antigravity-telegram`)
+2. **On-Demand NPX** (`npx antigravity-telegram <command>`)
+3. **Source Scripts** (`npm run <script>` from local git clone)
+
+| Action | Global CLI | On-Demand NPX | Local Source (`npm run`) | Description & Behavior |
+| :--- | :--- | :--- | :--- | :--- |
+| **Interactive Setup** | `antigravity-telegram setup` | `npx antigravity-telegram setup` | `npm run setup` | Launches interactive wizard to configure Bot Token, User ID whitelist, and base directories with chmod 600 persistence. |
+| **Launch IDE with CDP** | `antigravity-telegram open` | `npx antigravity-telegram open` | `npm run open` | Discovers available ports (9222–19223) and launches Antigravity IDE with remote debugging enabled across macOS, Linux, and Windows. |
+| **Start Gateway Daemon** | `antigravity-telegram start` | `npx antigravity-telegram start` | `npm start` *(or `npm run dev`)* | Boots the long-polling Telegram bot gateway, initializes SQLite repositories, and connects to CDP endpoints. |
+| **System Diagnostics** | `antigravity-telegram doctor` | `npx antigravity-telegram doctor` | `npm run doctor` | Verifies Node.js version, configuration integrity, SQLite accessibility, and CDP WebSocket reachability with remedies. |
+
+#### 1.2. Telegram Slash Commands (Chat / Topic)
 
 | Command | Arguments | Context | Description & Behavior |
 | :--- | :--- | :--- | :--- |

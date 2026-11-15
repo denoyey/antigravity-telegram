@@ -101,65 +101,118 @@ Whether you are commuting, having coffee, or working away from your desk, Antigr
 > [!NOTE]
 > **macOS Users**: Ensure Xcode Command Line Tools are installed (`xcode-select --install`) to compile native C++ SQLite bindings (`better-sqlite3`).
 
-### 1. Installation
+### 1. Installation & Execution Methods
 
-#### Global Install via npm (Recommended)
+You can run Antigravity Telegram in three different ways:
+
+#### Option A: Zero-Install via npx (Quickest)
+No prior installation required. Run directly on-demand:
 ```bash
-npm install -g antigravity-telegram
+npx antigravity-telegram setup
+npx antigravity-telegram open
+npx antigravity-telegram start
 ```
 
-#### Or Install from Source
+#### Option B: Global Install via npm (Recommended)
+Install once to have the CLI command available everywhere in your terminal:
+```bash
+npm install -g antigravity-telegram
+
+# Then run anytime:
+antigravity-telegram setup
+antigravity-telegram open
+antigravity-telegram start
+```
+
+#### Option C: From Source (Developers / Local Clone)
+Clone the repository to develop, customize, or contribute:
 ```bash
 git clone https://github.com/denoyey/antigravity-telegram.git
 cd antigravity-telegram
 npm install
 npm run build
+
+# Run commands via npm scripts:
+npm run setup
+npm run open
+npm start        # or npm run dev (hot-reload mode)
 ```
 
-### 2. Interactive Setup Wizard
+---
 
-Run the interactive setup wizard to configure your Telegram Bot Token, Allowed User IDs, and Workspace Root Directory:
+### 2. Step-by-Step Running Guide
+
+#### Step 1: Run Interactive Setup
+Configure your Telegram Bot Token, User ID Whitelist, and Base Workspace Directory:
 ```bash
+# Global
 antigravity-telegram setup
+
+# Or via npx
+npx antigravity-telegram setup
+
+# Or from source
+npm run setup
 ```
+> The configuration is saved securely to `.env` or `~/.config/antigravity-telegram-remote/config.json` with restricted `600` permissions.
 
-The configuration is saved securely to `.env` or `~/.config/antigravity-telegram-remote/config.json` with `600` file permissions.
-
-### 3. Launch Antigravity with CDP Debugging
-
-Antigravity Telegram interacts with Antigravity through its Chrome DevTools Protocol port. Launch Antigravity with debugging enabled:
+#### Step 2: Launch Antigravity IDE with Remote Debugging
+Antigravity Telegram communicates with the desktop IDE via Chrome DevTools Protocol (CDP). Launch your IDE with CDP enabled:
 ```bash
+# Global
 antigravity-telegram open
+
+# Or via npx
+npx antigravity-telegram open
+
+# Or from source
+npm run open
 ```
 
-### 4. Start the Telegram Bot
-
-In your terminal, start the bot daemon:
+#### Step 3: Start the Telegram Bot Daemon
+Boot up the long-polling bot gateway:
 ```bash
+# Global
 antigravity-telegram start
+
+# Or via npx
+npx antigravity-telegram start
+
+# Or from source
+npm start            # Standard run
+npm run dev          # Development mode with hot-reload
 ```
 
-> [!TIP]
-> If you experience connection issues or want to verify your setup, run the diagnostic doctor:
-> ```bash
-> antigravity-telegram doctor
-> ```
+#### Step 4: Verify Environment & Connectivity (Doctor)
+If you encounter any issues or want to verify that your environment, Node version, and CDP ports are responding:
+```bash
+# Global
+antigravity-telegram doctor
+
+# Or via npx
+npx antigravity-telegram doctor
+
+# Or from source
+npm run doctor
+```
 
 ---
 
 ## ⌨️ Command Reference
 
-### CLI Commands (Terminal)
+### CLI Running Commands Matrix
 
-| Command | Description |
-| :--- | :--- |
-| `antigravity-telegram setup` | Run the interactive setup and configuration wizard. |
-| `antigravity-telegram open` | Scan available ports and launch Antigravity with CDP enabled. |
-| `antigravity-telegram start` | Start the Telegram bot gateway. |
-| `antigravity-telegram doctor` | Diagnose environment, Node version, CDP connectivity, and database health. |
-| `antigravity-telegram --verbose` | Start with verbose debug-level logging. |
+| Task / Action | Global CLI (`npm i -g`) | On-Demand (`npx`) | From Source (`git clone`) | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Interactive Setup** | `antigravity-telegram setup` | `npx antigravity-telegram setup` | `npm run setup` | Launches configuration wizard for Bot Token & Whitelist. |
+| **Launch IDE (CDP)** | `antigravity-telegram open` | `npx antigravity-telegram open` | `npm run open` | Starts Antigravity IDE with remote debugging port active. |
+| **Start Bot Gateway** | `antigravity-telegram start` | `npx antigravity-telegram start` | `npm start` *(or `npm run dev`)* | Boots the bot long-polling process and event listeners. |
+| **Diagnostic Doctor** | `antigravity-telegram doctor` | `npx antigravity-telegram doctor` | `npm run doctor` | Verifies Node.js, config, SQLite, and CDP WebSocket health. |
+| **Debug Logging** | `antigravity-telegram --verbose` | `npx antigravity-telegram --verbose` | `npm start -- --verbose` | Displays detailed debug logs for CDP and DOM monitoring. |
+| **Run Unit Tests** | — | — | `npm test` | Runs 71 Jest test suites (711 unit/integration tests). |
+| **Compile Source** | — | — | `npm run build` | Compiles TypeScript (`src/`) into distribution (`dist/`). |
 
-*(Note: `antigravity-telegram-remote` is supported as an alias for all CLI commands).*
+*(Note: `antigravity-telegram-remote` is supported as an identical alias for all CLI commands).*
 
 ### Telegram Slash Commands (Chat / Topic)
 
