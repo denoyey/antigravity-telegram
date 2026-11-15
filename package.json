@@ -50,6 +50,9 @@
   ],
   "author": "denoyey (https://github.com/denoyey)",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/denoyey/antigravity-telegram.git"
