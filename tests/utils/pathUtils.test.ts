@@ -1,4 +1,4 @@
-import { extractProjectNameFromPath, getAntigravityCdpHint } from '../../src/utils/pathUtils';
+import { extractProjectNameFromPath, getAntigravityCdpHint, getAntigravityCliPath } from '../../src/utils/pathUtils';
 
 // Helper to temporarily override process.platform
 function withPlatform(platform: string, fn: () => void): void {
@@ -81,6 +81,38 @@ describe('pathUtils', () => {
             withPlatform('darwin', () => {
                 expect(getAntigravityCdpHint(9333)).toContain('9333');
             });
+        });
+    });
+
+    describe('getAntigravityCliPath()', () => {
+        const originalEnv = { ...process.env };
+
+        afterEach(() => {
+            process.env = { ...originalEnv };
+        });
+
+        it('returns macOS application path on darwin', () => {
+            delete process.env.ANTIGRAVITY_PATH;
+            withPlatform('darwin', () => {
+                expect(getAntigravityCliPath()).toBe(
+                    '/Applications/Antigravity.app/Contents/Resources/app/bin/antigravity'
+                );
+            });
+        });
+
+        it('returns Windows path when LOCALAPPDATA is set', () => {
+            delete process.env.ANTIGRAVITY_PATH;
+            process.env.LOCALAPPDATA = 'C:\\Users\\test\\AppData\\Local';
+            withPlatform('win32', () => {
+                expect(getAntigravityCliPath()).toBe(
+                    'C:\\Users\\test\\AppData\\Local\\Programs\\Antigravity\\Antigravity.exe'
+                );
+            });
+        });
+
+        it('respects explicit ANTIGRAVITY_PATH when valid file', () => {
+            process.env.ANTIGRAVITY_PATH = __filename;
+            expect(getAntigravityCliPath()).toBe(__filename);
         });
     });
 });

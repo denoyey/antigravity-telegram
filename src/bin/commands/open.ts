@@ -92,7 +92,7 @@ function openWindows(port: number): Promise<void> {
 }
 
 function openLinux(port: number): Promise<void> {
-    const executable = getCustomPath() ?? APP_NAME.toLowerCase();
+    const executable = getCustomPath() ?? getAntigravityCliPath();
     return new Promise((resolve, reject) => {
         try {
             const child = spawn(executable, [`--remote-debugging-port=${port}`], {

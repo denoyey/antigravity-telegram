@@ -9,17 +9,34 @@
  * SECURITY: Validates that ANTIGRAVITY_PATH is a file to prevent command injection
  */
 export function getAntigravityCliPath(): string {
-    // Allow user to set explicit path via ANTIGRAVITY_PATH (especially useful for Linux AppImages)
-    if (process.env.ANTIGRAVITY_PATH) {
-        const path = process.env.ANTIGRAVITY_PATH;
-        // SECURITY: Validate that the path exists and is a file
+    // 1. Allow user to set explicit path via ANTIGRAVITY_PATH or config.json
+    let explicitPath = process.env.ANTIGRAVITY_PATH;
+
+    if (!explicitPath) {
         try {
             const fs = require('fs');
-            const stat = fs.statSync(path);
-            if (!stat.isFile()) {
-                throw new Error(`ANTIGRAVITY_PATH must be a file, got: ${path}`);
+            const os = require('os');
+            const path = require('path');
+            const configPath = path.join(os.homedir(), '.antigravity-telegram-remote', 'config.json');
+            if (fs.existsSync(configPath)) {
+                const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+                if (config.antigravityPath) {
+                    explicitPath = config.antigravityPath;
+                }
             }
-            return path;
+        } catch {
+            // Ignore parse errors
+        }
+    }
+
+    if (explicitPath) {
+        try {
+            const fs = require('fs');
+            const stat = fs.statSync(explicitPath);
+            if (!stat.isFile()) {
+                throw new Error(`ANTIGRAVITY_PATH must be a file, got: ${explicitPath}`);
+            }
+            return explicitPath;
         } catch (err: any) {
             throw new Error(`ANTIGRAVITY_PATH validation failed: ${err.message}`);
         }
@@ -37,7 +54,29 @@ export function getAntigravityCliPath(): string {
         return 'Antigravity.exe'; // Fallback if LOCALAPPDATA is undefined
     }
 
-    // Default for Linux or any unknown OS, assuming 'antigravity' is in the system PATH
+    // On Linux or unknown POSIX: scan common installation locations for Antigravity IDE
+    const fs = require('fs');
+    const home = process.env.HOME || '';
+    const candidatePaths = [
+        '/usr/share/antigravity/bin/antigravity-ide',
+        '/usr/share/antigravity/antigravity-ide',
+        '/usr/bin/antigravity-ide',
+        '/usr/local/bin/antigravity-ide',
+        `${home}/.local/share/antigravity-ide/bin/antigravity-ide`,
+        `${home}/.local/share/antigravity-ide/antigravity-ide`,
+    ];
+
+    for (const candidate of candidatePaths) {
+        try {
+            if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+                return candidate;
+            }
+        } catch {
+            // Continue scanning
+        }
+    }
+
+    // Fallback assuming 'antigravity' or 'antigravity-ide' is in PATH
     return 'antigravity';
 }
 

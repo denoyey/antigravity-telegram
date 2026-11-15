@@ -97,7 +97,7 @@ flowchart TD
 - **`ConfigLoader`**: Discovers configuration from `.env` or `~/.config/antigravity-telegram-remote/config.json`. Validates required environment variables (`TELEGRAM_BOT_TOKEN`, `ALLOWED_USER_IDS`).
 - **`startAction` / `doctorAction` / `setupAction` / `openAction`**:
   - `doctor`: Verifies Node.js version, platform executables, CDP port reachability, and SQLite file permissions.
-  - `open`: Detects OS and launches Antigravity with `--remote-debugging-port=<available-port>`.
+  - `open`: Detects OS and launches Antigravity with `--remote-debugging-port=<available-port>`. Resolves binary path via `ANTIGRAVITY_PATH`, persistent `config.json` (`antigravityPath`), common Linux desktop paths (`/usr/share/antigravity/bin/antigravity-ide`, `/usr/bin/antigravity-ide`), macOS application bundle, or Windows AppData.
 
 #### 3.2. Telegram Gateway & Middleware (`src/bot/`, `src/middleware/`)
 - **`bot.use(...)` Whitelist Gatekeeper**:
