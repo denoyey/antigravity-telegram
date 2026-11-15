@@ -103,7 +103,7 @@ describe('CdpService - Message Injection (Step 5)', () => {
     });
 
     beforeEach(() => {
-        service = new CdpService({ portsToScan: [testPort] });
+        service = new CdpService({ portsToScan: [testPort], maxReconnectAttempts: 0 });
     });
 
     afterEach(async () => {

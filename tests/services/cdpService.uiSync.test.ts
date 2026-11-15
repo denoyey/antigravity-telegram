@@ -39,13 +39,16 @@ describe('CdpService - UI sync (Step 9)', () => {
 
         MockWebSocket.mockImplementation(() => mockWsInstance);
 
-        cdpService = new CdpService({ cdpCallTimeout: 1000 });
+        cdpService = new CdpService({ cdpCallTimeout: 1000, maxReconnectAttempts: 0 });
 
         // Spy on the call method to simulate connected state
         callSpy = jest.spyOn(cdpService, 'call');
     });
 
     afterEach(async () => {
+        if (cdpService) {
+            await cdpService.disconnect();
+        }
         jest.restoreAllMocks();
     });
 

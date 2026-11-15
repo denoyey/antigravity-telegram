@@ -44,7 +44,10 @@ describe('CdpService - error handling and timeout processing (Step 12)', () => {
         MockWebSocket.mockImplementation(() => mockWsInstance);
     });
 
-    afterEach(() => {
+    afterEach(async () => {
+        if (cdpService) {
+            await cdpService.disconnect();
+        }
         jest.restoreAllMocks();
     });
 

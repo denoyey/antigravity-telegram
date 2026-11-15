@@ -319,6 +319,7 @@ export class CdpService extends EventEmitter {
 
     async disconnect(): Promise<void> {
         this.stopHeartbeat();
+        this.isReconnecting = false;
         // Suppress reconnection during intentional disconnect
         const savedMaxReconnectAttempts = this.maxReconnectAttempts;
         this.maxReconnectAttempts = 0;
@@ -872,7 +873,7 @@ export class CdpService extends EventEmitter {
         this.isReconnecting = true;
         this.reconnectAttemptCount = 0;
 
-        while (this.reconnectAttemptCount < this.maxReconnectAttempts) {
+        while (this.isReconnecting && this.reconnectAttemptCount < this.maxReconnectAttempts) {
             this.reconnectAttemptCount++;
             logger.error(
                 `[CdpService] Reconnect attempt ${this.reconnectAttemptCount}/${this.maxReconnectAttempts}...`
@@ -880,6 +881,7 @@ export class CdpService extends EventEmitter {
 
             // Add delay between attempts
             await new Promise(r => setTimeout(r, this.reconnectDelayMs));
+            if (!this.isReconnecting) return;
 
             try {
                 this.contexts = [];
@@ -889,16 +891,19 @@ export class CdpService extends EventEmitter {
                     await this.discoverTarget();
                     await this.connect();
                 }
+                if (!this.isReconnecting) return;
                 logger.error('[CdpService] Reconnect succeeded.');
                 this.reconnectAttemptCount = 0;
                 this.isReconnecting = false;
                 this.emit('reconnected');
                 return;
             } catch (err) {
+                if (!this.isReconnecting) return;
                 logger.error('[CdpService] Reconnect failed:', err);
             }
         }
 
+        if (!this.isReconnecting) return;
         this.isReconnecting = false;
         const finalError = new Error(
             `CDP reconnection failed ${this.maxReconnectAttempts} times. Manual restart required.`
