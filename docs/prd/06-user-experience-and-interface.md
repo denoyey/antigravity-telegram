@@ -116,3 +116,24 @@ User-facing messages are fully localized across three languages via `src/utils/i
 - **English (`en`)**: Default international developer locale.
 - **Japanese (`ja`)**: Clean, natural keigo for Japanese developers.
 - **Vietnamese (`vi`)**: Natural, precise terminology for Vietnamese developers.
+
+---
+
+### 6. Telegram Bot Onboarding & Gateway Setup Lifecycle
+
+To achieve a seamless 3-minute setup for developers on mobile and desktop:
+
+#### 6.1. Telegram Bot Token Provisioning
+- The developer creates a bot instance via [@BotFather](https://t.me/BotFather) using `/newbot`.
+- The generated HTTP API token (`TELEGRAM_BOT_TOKEN`) is passed to the interactive wizard (`antigravity-telegram setup`).
+
+#### 6.2. Identity Verification & Whitelist Guard
+- The developer determines their numerical Telegram ID using [@userinfobot](https://t.me/userinfobot).
+- ID is stored in `ALLOWED_USER_IDS`. Any incoming interaction from non-whitelisted accounts is dropped silently without error leakage.
+
+#### 6.3. Supergroup Forum Topics Integration
+- If `USE_TOPICS=true`, the bot is added to a dedicated Telegram Supergroup with Forum Topics enabled.
+- The bot requires Administrator privileges (`Manage Topics`, `Change Group Info`, `Delete Messages`) to automatically create and bind individual topics to local workspace directories.
+
+#### 6.4. Bot Command Autocomplete Sync
+- Bot commands are registered with [@BotFather](https://t.me/BotFather) via `/setcommands` to enable native mobile command autocompletion when typing `/`.

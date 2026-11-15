@@ -95,13 +95,59 @@ Whether you are commuting, having coffee, or working away from your desk, Antigr
 ### Prerequisites
 
 - **Node.js**: `v18.0.0` or higher
-- **Antigravity IDE**: Installed on host machine
-- **Telegram Bot**: Created in 1 minute via [@BotFather](https://t.me/BotFather)
+- **Antigravity IDE**: Installed on your workstation
+- **Telegram Bot**: Created via [@BotFather](https://t.me/BotFather) (see guide below)
 
 > [!NOTE]
 > **macOS Users**: Ensure Xcode Command Line Tools are installed (`xcode-select --install`) to compile native C++ SQLite bindings (`better-sqlite3`).
 
-### 1. Installation & Execution Methods
+---
+
+### 1. Telegram Bot Setup (3-Minute Setup)
+
+Before running the CLI, you need your **Telegram Bot Token** and **User ID**:
+
+#### Step 1: Create Your Bot with [@BotFather](https://t.me/BotFather)
+1. Open Telegram, search for [@BotFather](https://t.me/BotFather), and tap **Start**.
+2. Send `/newbot` to create a new bot instance.
+3. Choose a display name (e.g., `My Antigravity IDE`).
+4. Choose a unique username ending in `bot` (e.g., `my_antigravity_remote_bot`).
+5. BotFather will reply with your **HTTP API Token** (format: `1234567890:ABCdefGHIjklMNOpqrsTUVwxyz`). Copy and save this token.
+
+#### Step 2: Get Your Telegram User ID with [@userinfobot](https://t.me/userinfobot)
+1. In Telegram, search for [@userinfobot](https://t.me/userinfobot) and tap **Start**.
+2. The bot will reply with your account details. Copy the numeric **`Id`** (e.g., `987654321`).
+3. This ID will be your `ALLOWED_USER_IDS`. Due to zero-trust architecture, any message from an unauthorized ID is silently dropped.
+
+#### Step 3 (Recommended): Setup Forum Topics in a Telegram Group
+For the best multi-workspace experience:
+1. Create a new Telegram Group (e.g., `My Workspaces`) and add your bot.
+2. In Group Settings $\rightarrow$ Turn ON **"Topics"** (Forum Topics).
+3. Promote your bot to **Administrator** with permission to **Manage Topics** and **Delete Messages**.
+> Each project folder in your development directory will now automatically correspond to its own isolated Forum Topic thread!
+
+#### Step 4: Register Mobile Slash Command Menu
+To enable instant autocomplete when typing `/` on your phone:
+1. Send `/setcommands` to [@BotFather](https://t.me/BotFather) and select your bot.
+2. Copy and paste the following command list:
+```text
+project - Switch and bind workspace folder to this topic
+status - Check CDP connection, active model, and quota
+new - Start a fresh chat session in current workspace
+chat - Browse and restore previous chat sessions
+screenshot - Capture instant screenshot of Antigravity IDE
+model - Switch AI model (Gemini Pro, Flash, Claude, etc.)
+mode - Toggle operation mode (Fast, Plan, Code, Ask)
+stop - Halt executing prompt in this workspace
+autoaccept - Configure auto-approval for edits and commands
+template - Insert reusable prompt templates from SQLite
+cleanup - Purge inactive sessions and reclaim storage
+help - View command guide and keyboard shortcuts
+```
+
+---
+
+### 2. Installation & Execution Methods
 
 You can run Antigravity Telegram in three different ways:
 
