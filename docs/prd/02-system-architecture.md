@@ -167,3 +167,14 @@ To eliminate race conditions:
 1. Prompts sent to the same workspace directory are serialized using an in-memory workspace lock (`Map<string, Promise<void>>`).
 2. Two separate Telegram forum topics bound to the same repository directory cannot trigger overlapping prompts.
 3. `/stop` resolves the exact workspace bound to the invoking topic, preventing accidental cancellation of unrelated tasks in other workspaces.
+
+---
+
+### 5. Long-Term Daemon Stability & Resource Bounding
+
+To ensure uninterrupted multi-week execution without memory leaks or crashes:
+1. **Bounded In-Memory Caches (`BoundedCache<K, V>`)**: Plan contents and pending state maps enforce strict size caps (max 50 items) and sliding TTLs (30m - 1h), automatically evicting oldest items to prevent memory bloat.
+2. **Context Deduplication**: `CdpService` tracks `Runtime.executionContextCreated` to avoid duplicating context entries across iframe and web worker lifecycles.
+3. **Resilient Message Editing**: Live response streaming balances unclosed tags (`balanceHtmlTags`) when message truncation occurs, with an automatic plain-text fallback (`stripHtml`) to prevent Telegram `Bad Request: can't parse entities` aborts.
+4. **Unhandled Rejection Traps**: Global unhandled promise rejection listeners prevent host process crashes during transient network disconnects.
+5. **Stale Flag Auto-Purge**: Stop requests auto-expire after 30 seconds and are purged prior to any new prompt dispatch to prevent state contamination.
