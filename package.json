@@ -1,5 +1,5 @@
 {
-  "name": "antigravity-telegram-remote",
+  "name": "antigravity-telegram",
   "version": "0.2.12",
   "description": "Control Antigravity from anywhere — a local Telegram Bot that lets you remotely operate Antigravity on your home PC from your smartphone.",
   "main": "dist/index.js",
@@ -45,16 +45,16 @@
     "automation",
     "grammy"
   ],
-  "author": "Antigravity Telegram Remote Contributors",
+  "author": "Quan Nguyen (https://github.com/hongquandev)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hongquandev/antigravity-telegram-remote.git"
+    "url": "git+https://github.com/hongquandev/antigravity-telegram.git"
   },
   "bugs": {
-    "url": "https://github.com/hongquandev/antigravity-telegram-remote/issues"
+    "url": "https://github.com/hongquandev/antigravity-telegram/issues"
   },
-  "homepage": "https://github.com/hongquandev/antigravity-telegram-remote#readme",
+  "homepage": "https://github.com/hongquandev/antigravity-telegram#readme",
   "dependencies": {
     "better-sqlite3": "^12.6.2",
     "commander": "^14.0.3",
