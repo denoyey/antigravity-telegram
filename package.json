@@ -45,16 +45,16 @@
     "automation",
     "grammy"
   ],
-  "author": "Quan Nguyen (https://github.com/hongquandev)",
+  "author": "Antigravity Telegram Contributors (https://github.com/optimistengineer/remoat)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hongquandev/antigravity-telegram.git"
+    "url": "git+https://github.com/optimistengineer/remoat.git"
   },
   "bugs": {
-    "url": "https://github.com/hongquandev/antigravity-telegram/issues"
+    "url": "https://github.com/optimistengineer/remoat/issues"
   },
-  "homepage": "https://github.com/hongquandev/antigravity-telegram#readme",
+  "homepage": "https://github.com/optimistengineer/remoat#readme",
   "dependencies": {
     "better-sqlite3": "^12.6.2",
     "commander": "^14.0.3",

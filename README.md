@@ -110,8 +110,8 @@ npm install -g antigravity-telegram
 
 #### Or Install from Source
 ```bash
-git clone https://github.com/hongquandev/antigravity-telegram.git
-cd antigravity-telegram
+git clone https://github.com/optimistengineer/remoat.git
+cd remoat
 npm install
 npm run build
 ```
@@ -300,7 +300,7 @@ This project is licensed under the terms of the [MIT License](LICENSE).
 [ optimistengineer/remoat ] ──► Foundational Concept: Local CDP Bridge & Telegram Gateway
              │
              ▼
-[ Antigravity Telegram ]   ──► Audited, Overhauled & Expanded by Quan Nguyen - TNM
+[ Antigravity Telegram ]   ──► Audited, Overhauled & Modular Architecture
 ```
 
 | Architecture Area | Upstream Foundation (`remoat`) | Antigravity Telegram Enhancement |

@@ -5,5 +5,5 @@ export const LOGO = `
  / /   \\ \\ | |\\  |  | |   | | |  _ < | |    | || |
 /_/     \\_\\|_| \\_|  |_|  |___||_| \\_\\|___|  |_||_|
 
-           QUAN NGUYEN - TNM
+       ANTIGRAVITY TELEGRAM
 `;
