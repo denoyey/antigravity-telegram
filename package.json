@@ -45,16 +45,16 @@
     "automation",
     "grammy"
   ],
-  "author": "Antigravity Telegram Contributors (https://github.com/optimistengineer/remoat)",
+  "author": "denoyey (https://github.com/denoyey)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/optimistengineer/remoat.git"
+    "url": "git+https://github.com/denoyey/antigravity-telegram.git"
   },
   "bugs": {
-    "url": "https://github.com/optimistengineer/remoat/issues"
+    "url": "https://github.com/denoyey/antigravity-telegram/issues"
   },
-  "homepage": "https://github.com/optimistengineer/remoat#readme",
+  "homepage": "https://github.com/denoyey/antigravity-telegram#readme",
   "dependencies": {
     "better-sqlite3": "^12.6.2",
     "commander": "^14.0.3",

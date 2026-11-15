@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="docs/images/banner.svg" alt="Antigravity Telegram Banner" width="100%" />
+  <a href="https://github.com/denoyey/antigravity-telegram"><img src="docs/images/banner.svg" alt="Antigravity Telegram Banner" width="100%" /></a>
 
   <br/><br/>
 
@@ -110,8 +110,8 @@ npm install -g antigravity-telegram
 
 #### Or Install from Source
 ```bash
-git clone https://github.com/optimistengineer/remoat.git
-cd remoat
+git clone https://github.com/denoyey/antigravity-telegram.git
+cd antigravity-telegram
 npm install
 npm run build
 ```
@@ -300,7 +300,7 @@ This project is licensed under the terms of the [MIT License](LICENSE).
 [ optimistengineer/remoat ] ──► Foundational Concept: Local CDP Bridge & Telegram Gateway
              │
              ▼
-[ Antigravity Telegram ]   ──► Audited, Overhauled & Modular Architecture
+[ Antigravity Telegram (denoyey) ] ──► Audited, Overhauled & Modular Architecture
 ```
 
 | Architecture Area | Upstream Foundation (`remoat`) | Antigravity Telegram Enhancement |

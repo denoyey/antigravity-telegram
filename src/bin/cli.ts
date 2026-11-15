@@ -12,8 +12,8 @@ import { ConfigLoader } from '../utils/configLoader';
 import { printWelcome } from './welcome';
 
 const program = new Command()
-    .name('antigravity-telegram-remote')
-    .description('Điều khiển trợ lý lập trình AI của bạn từ Telegram')
+    .name('antigravity-telegram')
+    .description('Control your Antigravity AI IDE remotely via Telegram')
     .version(version)
     .option('--verbose', 'Hiển thị nhật ký cấp độ debug')
     .option('--quiet', 'Chỉ hiển thị lỗi');
