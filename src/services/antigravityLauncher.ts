@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger';
 import { CDP_PORTS } from '../utils/cdpPorts';
-import { getAntigravityCdpHint } from '../utils/pathUtils';
+import { getAntigravityCdpHint, isAntigravityRunning } from '../utils/pathUtils';
 import * as http from 'http';
 
 /**
@@ -44,17 +44,29 @@ export async function ensureAntigravityRunning(): Promise<void> {
         return;
     }
 
+    const isRunning = await isAntigravityRunning();
+
     logger.warn('');
     logger.warn('='.repeat(70));
     logger.warn('  Antigravity CDP ports are not responding');
     logger.warn('');
-    logger.warn('  Launch Antigravity with CDP enabled:');
-    logger.warn('    antigravity-telegram open');
-    logger.warn('');
-    logger.warn('  Or manually:');
-    logger.warn(`    ${getAntigravityCdpHint(9222)}`);
-    logger.warn('');
-    logger.warn('  The bot will auto-connect once Antigravity is running.');
+    if (isRunning) {
+        logger.warn('  ⚠️  Antigravity IDE is currently running, but without CDP enabled.');
+        logger.warn('  Electron requires a full restart to enable remote debugging.');
+        logger.warn('');
+        logger.warn('  To connect:');
+        logger.warn('    1. Quit Antigravity IDE completely (File > Exit)');
+        logger.warn('    2. Launch with CDP: antigravity-telegram open');
+        logger.warn('    3. The bot will automatically connect.');
+    } else {
+        logger.warn('  Launch Antigravity with CDP enabled:');
+        logger.warn('    antigravity-telegram open');
+        logger.warn('');
+        logger.warn('  Or manually:');
+        logger.warn(`    ${getAntigravityCdpHint(9222)}`);
+        logger.warn('');
+        logger.warn('  The bot will auto-connect once Antigravity is running.');
+    }
     logger.warn('='.repeat(70));
     logger.warn('');
 }

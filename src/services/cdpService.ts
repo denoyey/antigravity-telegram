@@ -100,7 +100,7 @@ export class CdpService extends EventEmitter {
                 if (res.statusCode && (res.statusCode < 200 || res.statusCode >= 300)) {
                     res.resume(); // drain response
                     const error = new Error(`HTTP ${res.statusCode} from ${url}`);
-                    logger.warn(`[CdpService] getJson failed: ${error.message}`);
+                    logger.debug(`[CdpService] getJson failed: ${error.message}`);
                     reject(error);
                     return;
                 }
@@ -108,19 +108,19 @@ export class CdpService extends EventEmitter {
                 res.on('data', chunk => data += chunk);
                 res.on('end', () => {
                     try { resolve(JSON.parse(data)); } catch (e) {
-                        logger.warn(`[CdpService] Failed to parse JSON from ${url}:`, e);
+                        logger.debug(`[CdpService] Failed to parse JSON from ${url}:`, e);
                         reject(e);
                     }
                 });
             });
             req.on('error', (e) => {
-                logger.warn(`[CdpService] Network error fetching ${url}:`, e.message);
+                logger.debug(`[CdpService] Network error fetching ${url}: ${e.message}`);
                 reject(e);
             });
             req.setTimeout(5000, () => {
                 req.destroy();
                 const error = new Error(`Timeout fetching ${url}`);
-                logger.warn(`[CdpService] ${error.message}`);
+                logger.debug(`[CdpService] ${error.message}`);
                 reject(error);
             });
         });

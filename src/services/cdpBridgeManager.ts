@@ -220,7 +220,7 @@ export function getCurrentCdp(bridge: CdpBridge): CdpService | null {
         logger.debug(`[CdpBridge] Workspace "${bridge.lastActiveWorkspace || '(none)'}" not connected. Falling back to "${fallbackName}"`);
         return bridge.pool.getConnected(fallbackName);
     }
-    logger.warn(`[CdpBridge] No connected workspaces found.`);
+    logger.debug(`[CdpBridge] No connected workspaces found.`);
     return null;
 }
 

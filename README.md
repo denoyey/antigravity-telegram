@@ -215,6 +215,9 @@ npx antigravity-telegram open
 npm run open
 ```
 
+> [!NOTE]
+> **Single-Instance Prerequisite**: Electron applications cannot dynamically open CDP ports on an already-running instance. If Antigravity IDE is already open without remote debugging, quit Antigravity completely (`File > Exit` or close all windows) before running `antigravity-telegram open`. The CLI will automatically detect if Antigravity is running without CDP and guide you.
+
 #### Step 3: Start the Telegram Bot Daemon
 Boot up the long-polling bot gateway:
 ```bash

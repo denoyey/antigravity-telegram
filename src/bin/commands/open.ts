@@ -1,8 +1,9 @@
+import * as http from 'http';
 import * as net from 'net';
 import * as os from 'os';
 import { execFile, spawn } from 'child_process';
 import { CDP_PORTS } from '../../utils/cdpPorts';
-import { getAntigravityCliPath } from '../../utils/pathUtils';
+import { getAntigravityCliPath, isAntigravityRunning } from '../../utils/pathUtils';
 
 const APP_NAME = 'Antigravity';
 
@@ -17,6 +18,7 @@ const C = {
     dim: '\x1b[2m',
     cyan: '\x1b[36m',
     green: '\x1b[32m',
+    yellow: '\x1b[33m',
     red: '\x1b[31m',
 } as const;
 
@@ -32,6 +34,36 @@ function isPortAvailable(port: number): Promise<boolean> {
         });
         server.listen(port, '127.0.0.1');
     });
+}
+
+/**
+ * Check if CDP endpoint is responding on a given port.
+ */
+function checkCdpPort(port: number): Promise<boolean> {
+    return new Promise((resolve) => {
+        const req = http.get(`http://127.0.0.1:${port}/json/version`, (res) => {
+            resolve(res.statusCode === 200);
+        });
+        req.on('error', () => resolve(false));
+        req.setTimeout(1500, () => {
+            req.destroy();
+            resolve(false);
+        });
+    });
+}
+
+/**
+ * Poll CDP endpoint until it responds or times out.
+ */
+async function waitForCdpReady(port: number, timeoutMs: number = 4000): Promise<boolean> {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeoutMs) {
+        if (await checkCdpPort(port)) {
+            return true;
+        }
+        await new Promise((r) => setTimeout(r, 400));
+    }
+    return false;
 }
 
 async function findAvailablePort(): Promise<number | null> {
@@ -115,6 +147,28 @@ function openLinux(port: number): Promise<void> {
 export async function openAction(): Promise<void> {
     const platform = os.platform();
 
+    // 1. Check if Antigravity is already running with CDP on any port
+    for (const p of CDP_PORTS) {
+        if (await checkCdpPort(p)) {
+            console.log(`\n  ${C.green}${APP_NAME} is already running with CDP on port ${p}.${C.reset}`);
+            console.log(`  ${C.dim}Run ${C.reset}${C.cyan}antigravity-telegram start${C.reset}${C.dim} to connect the bot.${C.reset}\n`);
+            return;
+        }
+    }
+
+    // 2. Check if Antigravity is already running without CDP
+    const isRunning = await isAntigravityRunning();
+    if (isRunning) {
+        console.log(`\n  ${C.yellow}⚠️  ${APP_NAME} is already running without remote debugging (CDP).${C.reset}`);
+        console.log(`  ${C.dim}Electron applications cannot dynamically enable remote debugging once started.${C.reset}\n`);
+        console.log(`  ${C.bold}To connect Antigravity Telegram:${C.reset}`);
+        console.log(`  1. Quit ${APP_NAME} completely (${C.cyan}File > Exit${C.reset} or close all Antigravity windows).`);
+        console.log(`  2. Rerun: ${C.cyan}antigravity-telegram open${C.reset}`);
+        console.log(`  3. Rerun: ${C.cyan}antigravity-telegram start${C.reset}\n`);
+        process.exitCode = 1;
+        return;
+    }
+
     console.log(`\n  ${C.cyan}Searching for an available CDP port...${C.reset}`);
 
     const port = await findAvailablePort();
@@ -138,8 +192,14 @@ export async function openAction(): Promise<void> {
             await openLinux(port);
         }
 
-        console.log(`  ${C.green}${APP_NAME} opened on CDP port ${port}${C.reset}`);
-        console.log(`  ${C.dim}Run ${C.reset}${C.cyan}antigravity-telegram start${C.reset}${C.dim} to connect the bot.${C.reset}\n`);
+        const ready = await waitForCdpReady(port, 4000);
+        if (ready) {
+            console.log(`  ${C.green}${APP_NAME} opened and CDP is responding on port ${port}!${C.reset}`);
+            console.log(`  ${C.dim}Run ${C.reset}${C.cyan}antigravity-telegram start${C.reset}${C.dim} to connect the bot.${C.reset}\n`);
+        } else {
+            console.log(`  ${C.yellow}⚠️  ${APP_NAME} process launched, but port ${port} did not respond within 4s.${C.reset}`);
+            console.log(`  ${C.dim}If ${APP_NAME} was already open in the background, please quit it and try again.${C.reset}\n`);
+        }
     } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
         console.log(`  ${C.red}${msg}${C.reset}`);

@@ -1,3 +1,6 @@
+import { execFile } from 'child_process';
+import * as os from 'os';
+
 /**
  * Helper to resolve the correct Antigravity CLI executable path based on the operating system
  * and environment variables.
@@ -107,3 +110,35 @@ export function getAntigravityCdpHint(port: number = 9222): string {
             return `${APP_NAME.toLowerCase()} --remote-debugging-port=${port}`;
     }
 }
+
+/**
+ * Checks whether an Antigravity IDE process is currently running on the host OS.
+ * Useful to detect when Antigravity is open without remote debugging enabled.
+ */
+export function isAntigravityRunning(): Promise<boolean> {
+    return new Promise((resolve) => {
+        const platform = process.platform;
+        if (platform === 'win32') {
+            execFile('tasklist', ['/FI', 'IMAGENAME eq Antigravity.exe', '/NH'], (err, stdout) => {
+                if (err || !stdout) return resolve(false);
+                resolve(stdout.toLowerCase().includes('antigravity.exe'));
+            });
+        } else {
+            // Linux and macOS
+            execFile('pgrep', ['-fl', 'antigravity'], (err, stdout) => {
+                if (err || !stdout) return resolve(false);
+                const lines = stdout.split('\n');
+                const isRunning = lines.some((line) => {
+                    const lower = line.toLowerCase();
+                    if (lower.includes('antigravity-telegram')) return false;
+                    return lower.includes('antigravity-ide') ||
+                        lower.includes('antigravity.app') ||
+                        lower.includes('antigravity.appimage') ||
+                        lower.includes('/bin/antigravity');
+                });
+                resolve(isRunning);
+            });
+        }
+    });
+}
+

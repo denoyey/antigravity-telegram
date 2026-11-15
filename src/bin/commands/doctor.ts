@@ -5,7 +5,7 @@ import * as path from 'path';
 import { execFileSync } from 'child_process';
 import { CDP_PORTS } from '../../utils/cdpPorts';
 import { ConfigLoader } from '../../utils/configLoader';
-import { getAntigravityCdpHint } from '../../utils/pathUtils';
+import { getAntigravityCdpHint, getAntigravityCliPath, isAntigravityRunning } from '../../utils/pathUtils';
 import { COLORS } from '../../utils/logger';
 
 const ok = (msg: string) => console.log(`  ${COLORS.green}[OK]${COLORS.reset} ${msg}`);
@@ -120,7 +120,15 @@ export async function doctorAction(): Promise<void> {
         allOk = false;
     }
 
-    // 6. Platform-specific checks
+    // 6. Antigravity binary check
+    try {
+        const cliPath = getAntigravityCliPath();
+        ok(`Antigravity binary found: ${cliPath}`);
+    } catch (err: any) {
+        warn(`Antigravity binary not found: ${err.message}`);
+        hint('Install Antigravity, or set ANTIGRAVITY_PATH in .env');
+    }
+
     const platform = os.platform();
     if (platform === 'darwin') {
         // Check Xcode Command Line Tools (needed for native module compilation)
@@ -131,22 +139,6 @@ export async function doctorAction(): Promise<void> {
             warn('Xcode Command Line Tools not found');
             hint('Install with: xcode-select --install');
             hint('Required for native dependencies (better-sqlite3)');
-        }
-
-        // Check if Antigravity.app exists
-        const antigravityPath = process.env.ANTIGRAVITY_PATH;
-        if (antigravityPath) {
-            if (fs.existsSync(antigravityPath)) {
-                ok(`Antigravity found: ${antigravityPath}`);
-            } else {
-                fail(`ANTIGRAVITY_PATH set but not found: ${antigravityPath}`);
-                allOk = false;
-            }
-        } else if (fs.existsSync('/Applications/Antigravity.app')) {
-            ok('Antigravity.app found in /Applications');
-        } else {
-            warn('Antigravity.app not found in /Applications');
-            hint('Install Antigravity, or set ANTIGRAVITY_PATH in .env');
         }
     }
 
@@ -162,8 +154,16 @@ export async function doctorAction(): Promise<void> {
     }
     if (!cdpOk) {
         fail('No CDP ports responding');
-        hint(`Run: antigravity-telegram open`);
-        hint(`Or manually: ${getAntigravityCdpHint(9222)}`);
+        const isRunning = await isAntigravityRunning();
+        if (isRunning) {
+            warn('Antigravity is currently running, but without remote debugging (CDP).');
+            hint('Electron requires a restart to enable CDP:');
+            hint('1. Quit Antigravity completely (File > Exit)');
+            hint('2. Run: antigravity-telegram open');
+        } else {
+            hint(`Run: antigravity-telegram open`);
+            hint(`Or manually: ${getAntigravityCdpHint(9222)}`);
+        }
         allOk = false;
     }
 
