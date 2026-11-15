@@ -224,6 +224,26 @@ export function getCurrentCdp(bridge: CdpBridge): CdpService | null {
     return null;
 }
 
+export async function getOrConnectCurrentCdp(
+    bridge: CdpBridge,
+    fallbackWorkspacePath?: string,
+): Promise<CdpService | null> {
+    const existing = getCurrentCdp(bridge);
+    if (existing) return existing;
+
+    try {
+        const connected = await bridge.pool.getOrConnectAny(fallbackWorkspacePath);
+        if (connected) {
+            bridge.lastActiveWorkspace = connected.getCurrentWorkspaceName();
+            return connected;
+        }
+    } catch (err) {
+        logger.debug('[CdpBridge] getOrConnectCurrentCdp auto-connect failed:', err);
+    }
+
+    return null;
+}
+
 async function sendTelegramMessage(
     api: Api,
     channel: TelegramChannel,

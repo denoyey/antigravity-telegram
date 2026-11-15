@@ -33,6 +33,7 @@ import {
     ensureErrorPopupDetector,
     ensurePlanningDetector,
     getCurrentCdp,
+    getOrConnectCurrentCdp,
     initCdpBridge,
     registerApprovalSessionChannel,
     registerApprovalWorkspaceChannel,
@@ -116,7 +117,7 @@ function stripHtmlForFile(html: string): string {
  */
 class BoundedCache<K, V> {
     private readonly map = new Map<K, { value: V; expiresAt: number }>();
-    constructor(private readonly maxEntries = 50, private readonly ttlMs = 3600000) {}
+    constructor(private readonly maxEntries = 50, private readonly ttlMs = 3600000) { }
 
     set(key: K, value: V): void {
         if (this.map.size >= this.maxEntries) {
@@ -286,7 +287,7 @@ async function sendPromptToAntigravity(
             } catch (e2: any) {
                 const desc2 = e2?.description || e2?.message || '';
                 logger.error(`[sendMsg] HTML attempt 2 (fixed) failed: ${desc2.slice(0, 100)}. Falling back to plain text.`);
-                
+
                 // Attempt 3: Plain text fallback
                 try {
                     const plain = stripHtml(text);
@@ -478,7 +479,7 @@ async function sendPromptToAntigravity(
         const body = normalized
             ? (isAlreadyHtml ? normalized : formatForTelegram(normalized))
             : t('Generating...');
-        
+
         let truncated = body;
         if (!skipTruncation && body.length > LIVE_RESPONSE_MAX_LEN) {
             const rawSlice = body.slice(-LIVE_RESPONSE_MAX_LEN + 30);
@@ -1067,10 +1068,13 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
 
     // /mode command
     bot.command('mode', async (ctx) => {
+        const ch = getChannel(ctx);
+        const resolved = await resolveWorkspaceAndCdp(ch);
+        const cdp = resolved?.cdp ?? (await getOrConnectCurrentCdp(bridge));
         await sendModeUI(
             async (text, keyboard) => { await replyHtml(ctx, text, keyboard); },
             modeService,
-            { getCurrentCdp: () => getCurrentCdp(bridge) },
+            { getCurrentCdp: () => cdp ?? getCurrentCdp(bridge) },
         );
     });
 
@@ -1078,12 +1082,13 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
     bot.command('model', async (ctx) => {
         const ch = getChannel(ctx);
         const resolved = await resolveWorkspaceAndCdp(ch);
-        const getCdp = (): CdpService | null => resolved?.cdp ?? getCurrentCdp(bridge);
+        const cdp = resolved?.cdp ?? (await getOrConnectCurrentCdp(bridge));
+        const getCdp = (): CdpService | null => cdp ?? getCurrentCdp(bridge);
         const modelName = ctx.match?.trim();
         if (modelName) {
-            const cdp = getCdp();
-            if (!cdp) { await ctx.reply('Not connected to CDP. Send a message first to connect.'); return; }
-            const res = await cdp.setUiModel(modelName);
+            const activeCdp = getCdp();
+            if (!activeCdp) { await ctx.reply('Not connected to CDP. Open Antigravity with npm run open or select a project via /project.'); return; }
+            const res = await activeCdp.setUiModel(modelName);
             if (res.ok) { await ctx.reply(`Model changed to <b>${escapeHtml(res.model || modelName)}</b>.`, { parse_mode: 'HTML' }); }
             else { await ctx.reply(res.error || 'Failed to change model.'); }
         } else {
@@ -1197,10 +1202,13 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
 
     // /screenshot command
     bot.command('screenshot', async (ctx) => {
+        const ch = getChannel(ctx);
+        const resolved = await resolveWorkspaceAndCdp(ch);
+        const cdp = resolved?.cdp ?? (await getOrConnectCurrentCdp(bridge));
         await handleScreenshot(
             async (input, caption) => { await ctx.replyWithPhoto(input, { caption }); },
             async (text) => { await ctx.reply(text); },
-            getCurrentCdp(bridge),
+            cdp,
         );
     });
 
@@ -1208,7 +1216,7 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
     bot.command('stop', async (ctx) => {
         const ch = getChannel(ctx);
         const resolved = await resolveWorkspaceAndCdp(ch);
-        const cdp = resolved?.cdp ?? getCurrentCdp(bridge);
+        const cdp = resolved?.cdp ?? (await getOrConnectCurrentCdp(bridge));
         if (!cdp) { await ctx.reply('⚠️ Not connected to CDP.'); return; }
 
         try {
@@ -1778,10 +1786,12 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
             }
 
             if (parsed.commandName === 'screenshot') {
+                const resolved = await resolveWorkspaceAndCdp(ch);
+                const cdp = resolved?.cdp ?? (await getOrConnectCurrentCdp(bridge));
                 await handleScreenshot(
                     async (input, caption) => { await ctx.replyWithPhoto(input, { caption }); },
                     async (text) => { await ctx.reply(text); },
-                    getCurrentCdp(bridge),
+                    cdp,
                 );
                 return;
             }
@@ -1801,7 +1811,8 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
             await ctx.reply(result.message);
 
             if (result.prompt) {
-                const cdp = getCurrentCdp(bridge);
+                const resolved = await resolveWorkspaceAndCdp(ch);
+                const cdp = resolved?.cdp ?? (await getOrConnectCurrentCdp(bridge));
                 if (cdp) {
                     await promptDispatcher.send({
                         channel: ch,
@@ -1924,7 +1935,8 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
             await ctx.reply(`🎙️ "${transcript}"\n\n${result.message}`);
 
             if (result.prompt) {
-                const cdp = getCurrentCdp(bridge);
+                const resolved = await resolveWorkspaceAndCdp(ch);
+                const cdp = resolved?.cdp ?? (await getOrConnectCurrentCdp(bridge));
                 if (cdp) {
                     await promptDispatcher.send({
                         channel: ch,

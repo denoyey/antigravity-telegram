@@ -344,6 +344,13 @@ export class CdpService extends EventEmitter {
     }
 
     /**
+     * Set the currently connected workspace name.
+     */
+    setCurrentWorkspaceName(name: string | null): void {
+        this.currentWorkspaceName = name;
+    }
+
+    /**
      * Discover and connect to the workbench page for the specified workspace.
      * Does nothing if already connected to the correct page.
      *
@@ -371,6 +378,38 @@ export class CdpService extends EventEmitter {
         } finally {
             this.isSwitchingWorkspace = false;
         }
+    }
+
+    /**
+     * Auto-discover and connect to any active workbench page across CDP ports.
+     */
+    async discoverAndConnectAny(): Promise<boolean> {
+        let pages: any[] = [];
+        for (const port of this.ports) {
+            try {
+                const list = await this.getJson(`http://127.0.0.1:${port}/json/list`);
+                if (Array.isArray(list)) pages.push(...list);
+            } catch {
+                // Next port
+            }
+        }
+
+        const workbenchPages = pages.filter(
+            (t: any) =>
+                t.type === 'page' &&
+                t.webSocketDebuggerUrl &&
+                !t.title?.includes('Launchpad') &&
+                !t.url?.includes('workbench-jetski-agent') &&
+                t.url?.includes('workbench'),
+        );
+
+        if (workbenchPages.length === 0) {
+            return false;
+        }
+
+        const targetPage = workbenchPages[0];
+        const projectName = extractProjectNameFromPath(targetPage.title || 'default');
+        return this.connectToPage(targetPage, projectName);
     }
 
     /**

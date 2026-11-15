@@ -109,7 +109,7 @@ flowchart TD
 
 #### 3.3. CDP Integration & Bridge (`src/services/`)
 - **`CdpConnectionPool`**:
-  Manages persistent WebSocket connections across multiple active Antigravity workspace windows, reusing connections and preventing port exhaustion.
+  Manages persistent WebSocket connections across multiple active Antigravity workspace windows, reusing connections and preventing port exhaustion. Provides `getOrConnectAny()` to auto-discover and bind active workbench windows across CDP ports on-demand.
 - **`CdpService`**:
   Implements the low-level Chrome DevTools Protocol JSON-RPC envelope over `ws://127.0.0.1:<port>`. Handles:
   - Target discovery (`/json/list`).

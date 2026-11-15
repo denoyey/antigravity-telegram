@@ -58,7 +58,7 @@ export class CdpConnectionPool extends EventEmitter {
                 } catch (err) {
                     // Connection dropped during re-validation; close WebSocket and clean up
                     logger.warn(`[CdpConnectionPool] Connection for "${projectName}" dropped during re-validation:`, err);
-                    existing.disconnect().catch(() => {});
+                    existing.disconnect().catch(() => { });
                     this.connections.delete(projectName);
                 }
             } else {
@@ -236,6 +236,57 @@ export class CdpConnectionPool extends EventEmitter {
     }
 
     /**
+     * Get any active connection, or auto-connect to any available workbench page
+     * found across the configured CDP ports.
+     */
+    async getOrConnectAny(fallbackWorkspacePath?: string): Promise<CdpService | null> {
+        // 1. Return any existing active connection
+        const activeNames = this.getActiveWorkspaceNames();
+        if (activeNames.length > 0) {
+            const cdp = this.getConnected(activeNames[0]);
+            if (cdp) return cdp;
+        }
+
+        // 2. If fallbackWorkspacePath is provided, try connecting to it
+        if (fallbackWorkspacePath) {
+            try {
+                return await this.getOrConnect(fallbackWorkspacePath);
+            } catch (err) {
+                logger.debug(`[CdpConnectionPool] Fallback getOrConnect failed for "${fallbackWorkspacePath}":`, err);
+            }
+        }
+
+        // 3. Auto-discover any active workbench page across CDP ports
+        const cdp = new CdpService(this.cdpOptions);
+        try {
+            const connected = await cdp.discoverAndConnectAny();
+            if (connected) {
+                const name = cdp.getCurrentWorkspaceName() || 'default';
+                this.connections.set(name, cdp);
+
+                cdp.on('disconnected', () => {
+                    logger.error(`[CdpConnectionPool] Workspace "${name}" disconnected`);
+                    this.connections.delete(name);
+                    this.emit('workspace:disconnected', name);
+                });
+                cdp.on('reconnected', () => {
+                    this.emit('workspace:reconnected', name);
+                });
+                cdp.on('reconnectFailed', () => {
+                    this.emit('workspace:reconnectFailed', name);
+                });
+
+                logger.info(`[CdpConnectionPool] Auto-connected to active workbench "${name}"`);
+                return cdp;
+            }
+        } catch (err) {
+            logger.debug('[CdpConnectionPool] discoverAndConnectAny failed:', err);
+        }
+
+        return null;
+    }
+
+    /**
      * Extract the project name from a workspace path.
      */
     extractProjectName(workspacePath: string): string {
@@ -249,7 +300,7 @@ export class CdpConnectionPool extends EventEmitter {
         // Disconnect old connection if exists
         const old = this.connections.get(projectName);
         if (old) {
-            await old.disconnect().catch(() => {});
+            await old.disconnect().catch(() => { });
             this.connections.delete(projectName);
         }
 
