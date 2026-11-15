@@ -28,6 +28,9 @@
     "start": "ts-node src/bin/cli.ts",
     "start:built": "node dist/bin/cli.js",
     "dev": "ts-node-dev --respawn src/bin/cli.ts",
+    "setup": "ts-node src/bin/cli.ts setup",
+    "open": "ts-node src/bin/cli.ts open",
+    "doctor": "ts-node src/bin/cli.ts doctor",
     "docs:diagram": "mmdc -i docs/diagrams/architecture.mmd -o docs/images/architecture.svg -b transparent",
     "prepublishOnly": "npm run build && npm run test"
   },
