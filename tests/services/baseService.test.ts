@@ -1,5 +1,14 @@
 import { BaseService } from '../../src/services/baseService';
 
+jest.mock('../../src/utils/logger', () => ({
+    logger: {
+        info: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+    }
+}));
+
 class TestService extends BaseService {
     constructor() {
         super('TestService');

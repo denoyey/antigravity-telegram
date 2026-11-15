@@ -12,6 +12,17 @@
 
 import { ResponseMonitor, ResponsePhase } from '../../src/services/responseMonitor';
 
+jest.mock('../../src/utils/logger', () => ({
+    logger: {
+        info: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        phase: jest.fn(),
+        done: jest.fn(),
+    }
+}));
+
 /**
  * The NEW lean API renames stopButtonGoneConfirmCount -> stopGoneConfirmCount
  * and removes many options. We define the expected interface here so tests

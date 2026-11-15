@@ -2,6 +2,14 @@ import { CdpConnectionPool } from '../../src/services/cdpConnectionPool';
 import { CdpService } from '../../src/services/cdpService';
 
 jest.mock('../../src/services/cdpService');
+jest.mock('../../src/utils/logger', () => ({
+    logger: {
+        info: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+    }
+}));
 
 describe('CdpConnectionPool — bug fix coverage', () => {
     let pool: CdpConnectionPool;

@@ -10,6 +10,15 @@ import {
     resolveApprovalChannelForCurrentChat,
 } from '../../src/services/cdpBridgeManager';
 
+jest.mock('../../src/utils/logger', () => ({
+    logger: {
+        info: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+    }
+}));
+
 describe('cdpBridgeManager', () => {
     it('initCdpBridge builds the initial state', () => {
         const bridge = initCdpBridge(false);

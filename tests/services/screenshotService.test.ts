@@ -14,6 +14,16 @@ import { CdpService } from '../../src/services/cdpService';
 jest.mock('../../src/services/cdpService');
 const MockedCdpService = CdpService as jest.MockedClass<typeof CdpService>;
 
+// Mock logger
+jest.mock('../../src/utils/logger', () => ({
+    logger: {
+        info: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+    }
+}));
+
 describe('ScreenshotService - screenshot feature (Step 8)', () => {
     let screenshotService: ScreenshotService;
     let mockCdpService: jest.Mocked<CdpService>;

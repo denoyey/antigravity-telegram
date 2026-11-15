@@ -4,6 +4,15 @@ import { CdpService } from '../../src/services/cdpService';
 jest.mock('../../src/services/cdpService');
 const MockedCdpService = CdpService as jest.MockedClass<typeof CdpService>;
 
+jest.mock('../../src/utils/logger', () => ({
+    logger: {
+        info: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+    }
+}));
+
 /** Advance fake timers and flush microtasks */
 async function tick(ms: number): Promise<void> {
     jest.advanceTimersByTime(ms);

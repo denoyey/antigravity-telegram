@@ -16,6 +16,15 @@ import WebSocket from 'ws';
 jest.mock('ws');
 const MockWebSocket = WebSocket as jest.MockedClass<typeof WebSocket>;
 
+jest.mock('../../src/utils/logger', () => ({
+    logger: {
+        info: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+    }
+}));
+
 jest.mock('http', () => ({
     get: jest.fn(),
 }));
