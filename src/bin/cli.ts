@@ -48,6 +48,7 @@ program
 program
     .command('open')
     .description('Launch Antigravity IDE with CDP debugging enabled')
+    .option('-r, --restart', 'Gracefully restart Antigravity if already running without CDP')
     .action(openAction);
 
 program.parse();

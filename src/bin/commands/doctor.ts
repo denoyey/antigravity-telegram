@@ -158,8 +158,8 @@ export async function doctorAction(): Promise<void> {
         if (isRunning) {
             warn('Antigravity is currently running, but without remote debugging (CDP).');
             hint('Electron requires a restart to enable CDP:');
-            hint('1. Quit Antigravity completely (File > Exit)');
-            hint('2. Run: antigravity-telegram open');
+            hint('• Automatic: antigravity-telegram open --restart');
+            hint('• Manual: Quit Antigravity (File > Exit), then run: antigravity-telegram open');
         } else {
             hint(`Run: antigravity-telegram open`);
             hint(`Or manually: ${getAntigravityCdpHint(9222)}`);

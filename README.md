@@ -216,7 +216,9 @@ npm run open
 ```
 
 > [!NOTE]
-> **Single-Instance Prerequisite**: Electron applications cannot dynamically open CDP ports on an already-running instance. If Antigravity IDE is already open without remote debugging, quit Antigravity completely (`File > Exit` or close all windows) before running `antigravity-telegram open`. The CLI will automatically detect if Antigravity is running without CDP and guide you.
+> **Single-Instance Prerequisite**: Electron applications cannot dynamically open CDP ports on an already-running instance. If Antigravity IDE is already open without remote debugging:
+> - **Restart automatically with CDP**: `npm run open -- --restart` (or `antigravity-telegram open --restart`)
+> - **Or restart manually**: Quit Antigravity completely (`File > Exit`), then run `npm run open`.
 
 #### Step 3: Start the Telegram Bot Daemon
 Boot up the long-polling bot gateway:
@@ -254,7 +256,7 @@ npm run doctor
 | Task / Action | Global CLI (`npm i -g`) | On-Demand (`npx`) | From Source (`git clone`) | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | **Interactive Setup** | `antigravity-telegram setup` | `npx antigravity-telegram setup` | `npm run setup` | Launches configuration wizard for Bot Token & Whitelist. |
-| **Launch IDE (CDP)** | `antigravity-telegram open` | `npx antigravity-telegram open` | `npm run open` | Starts Antigravity IDE with remote debugging port active. |
+| **Launch IDE (CDP)** | `antigravity-telegram open [--restart]` | `npx antigravity-telegram open [--restart]` | `npm run open [-- --restart]` | Starts (or restarts) Antigravity IDE with remote debugging port active. |
 | **Start Bot Gateway** | `antigravity-telegram start` | `npx antigravity-telegram start` | `npm start` *(or `npm run dev`)* | Boots the bot long-polling process and event listeners. |
 | **Diagnostic Doctor** | `antigravity-telegram doctor` | `npx antigravity-telegram doctor` | `npm run doctor` | Verifies Node.js, config, SQLite, and CDP WebSocket health. |
 | **Debug Logging** | `antigravity-telegram --verbose` | `npx antigravity-telegram --verbose` | `npm start -- --verbose` | Displays detailed debug logs for CDP and DOM monitoring. |

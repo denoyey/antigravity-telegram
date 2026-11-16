@@ -55,9 +55,11 @@ export async function ensureAntigravityRunning(): Promise<void> {
         logger.warn('  Electron requires a full restart to enable remote debugging.');
         logger.warn('');
         logger.warn('  To connect:');
-        logger.warn('    1. Quit Antigravity IDE completely (File > Exit)');
-        logger.warn('    2. Launch with CDP: antigravity-telegram open');
-        logger.warn('    3. The bot will automatically connect.');
+        logger.warn('    • Restart automatically: antigravity-telegram open --restart');
+        logger.warn('    • Or restart manually:');
+        logger.warn('      1. Quit Antigravity IDE completely (File > Exit)');
+        logger.warn('      2. Launch with CDP: antigravity-telegram open');
+        logger.warn('      3. The bot will automatically connect.');
     } else {
         logger.warn('  Launch Antigravity with CDP enabled:');
         logger.warn('    antigravity-telegram open');

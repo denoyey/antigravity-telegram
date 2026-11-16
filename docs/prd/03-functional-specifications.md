@@ -15,7 +15,7 @@ Antigravity Telegram provides a unified CLI entry point (`antigravity-telegram` 
 | Action | Global CLI | On-Demand NPX | Local Source (`npm run`) | Description & Behavior |
 | :--- | :--- | :--- | :--- | :--- |
 | **Interactive Setup** | `antigravity-telegram setup` | `npx antigravity-telegram setup` | `npm run setup` | Launches interactive wizard to configure Bot Token, User ID whitelist, and base directories with chmod 600 persistence. |
-| **Launch IDE with CDP** | `antigravity-telegram open` | `npx antigravity-telegram open` | `npm run open` | Discovers available ports (9222–9666), detects existing non-CDP instances with restart guidance, launches Antigravity IDE, and validates CDP endpoint readiness. |
+| **Launch IDE with CDP** | `antigravity-telegram open [-r, --restart]` | `npx antigravity-telegram open [-r, --restart]` | `npm run open [-- --restart]` | Discovers available ports (9222–9666), supports automatic or manual restart when non-CDP instance is running, launches Antigravity IDE, and validates CDP endpoint readiness. |
 | **Start Gateway Daemon** | `antigravity-telegram start` | `npx antigravity-telegram start` | `npm start` *(or `npm run dev`)* | Boots the long-polling Telegram bot gateway, initializes SQLite repositories, and connects to CDP endpoints. |
 | **System Diagnostics** | `antigravity-telegram doctor` | `npx antigravity-telegram doctor` | `npm run doctor` | Verifies Node.js version, configuration integrity, SQLite accessibility, binary paths, running process status, and CDP reachability with actionable remedies. |
 

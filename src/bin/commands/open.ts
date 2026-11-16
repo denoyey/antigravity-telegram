@@ -144,7 +144,29 @@ function openLinux(port: number): Promise<void> {
     });
 }
 
-export async function openAction(): Promise<void> {
+/**
+ * Gracefully terminates running Antigravity IDE processes.
+ */
+function terminateAntigravity(): Promise<void> {
+    return new Promise((resolve) => {
+        const platform = os.platform();
+        if (platform === 'win32') {
+            execFile('taskkill', ['/IM', 'Antigravity.exe'], () => {
+                setTimeout(resolve, 1500);
+            });
+        } else {
+            execFile('pkill', ['-TERM', '-f', 'antigravity-ide'], () => {
+                setTimeout(resolve, 1500);
+            });
+        }
+    });
+}
+
+export interface OpenOptions {
+    restart?: boolean;
+}
+
+export async function openAction(options: OpenOptions = {}): Promise<void> {
     const platform = os.platform();
 
     // 1. Check if Antigravity is already running with CDP on any port
@@ -159,14 +181,25 @@ export async function openAction(): Promise<void> {
     // 2. Check if Antigravity is already running without CDP
     const isRunning = await isAntigravityRunning();
     if (isRunning) {
-        console.log(`\n  ${C.yellow}⚠️  ${APP_NAME} is already running without remote debugging (CDP).${C.reset}`);
-        console.log(`  ${C.dim}Electron applications cannot dynamically enable remote debugging once started.${C.reset}\n`);
-        console.log(`  ${C.bold}To connect Antigravity Telegram:${C.reset}`);
-        console.log(`  1. Quit ${APP_NAME} completely (${C.cyan}File > Exit${C.reset} or close all Antigravity windows).`);
-        console.log(`  2. Rerun: ${C.cyan}antigravity-telegram open${C.reset}`);
-        console.log(`  3. Rerun: ${C.cyan}antigravity-telegram start${C.reset}\n`);
-        process.exitCode = 1;
-        return;
+        if (options.restart) {
+            console.log(`\n  ${C.cyan}Restarting ${APP_NAME} with remote debugging enabled...${C.reset}`);
+            await terminateAntigravity();
+            let retries = 10;
+            while (retries-- > 0 && (await isAntigravityRunning())) {
+                await new Promise((r) => setTimeout(r, 400));
+            }
+        } else {
+            console.log(`\n  ${C.yellow}⚠️  ${APP_NAME} is already running without remote debugging (CDP).${C.reset}`);
+            console.log(`  ${C.dim}Electron applications cannot dynamically enable remote debugging once started.${C.reset}\n`);
+            console.log(`  ${C.bold}Options to resolve:${C.reset}`);
+            console.log(`  • Restart automatically: ${C.cyan}npm run open -- --restart${C.reset}  (or: ${C.cyan}antigravity-telegram open --restart${C.reset})`);
+            console.log(`  • Or restart manually:${C.reset}`);
+            console.log(`    1. Quit ${APP_NAME} completely (${C.cyan}File > Exit${C.reset} or close all windows).`);
+            console.log(`    2. Run: ${C.cyan}antigravity-telegram open${C.reset}`);
+            console.log(`    3. Run: ${C.cyan}antigravity-telegram start${C.reset}\n`);
+            process.exitCode = 1;
+            return;
+        }
     }
 
     console.log(`\n  ${C.cyan}Searching for an available CDP port...${C.reset}`);
