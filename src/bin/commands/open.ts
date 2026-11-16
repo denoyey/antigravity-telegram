@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import * as http from 'http';
 import * as net from 'net';
 import * as os from 'os';
@@ -21,6 +23,12 @@ const C = {
     yellow: '\x1b[33m',
     red: '\x1b[31m',
 } as const;
+
+export interface LaunchOptions {
+    newWindow?: boolean;
+    workspacePath?: string;
+    userDataDir?: string;
+}
 
 /**
  * Check whether a TCP port is available (not in use) by attempting to listen on it.
@@ -75,12 +83,23 @@ async function findAvailablePort(): Promise<number | null> {
     return null;
 }
 
-function openMacOS(port: number): Promise<void> {
+function openMacOS(port: number, options: LaunchOptions = {}): Promise<void> {
     const customPath = getCustomPath();
+    const args: string[] = [`--remote-debugging-port=${port}`];
+    if (options.newWindow) {
+        args.push('--new-window');
+    }
+    if (options.userDataDir) {
+        args.push(`--user-data-dir=${options.userDataDir}`);
+    }
+    if (options.workspacePath) {
+        args.push(options.workspacePath);
+    }
+
     return new Promise((resolve, reject) => {
         if (customPath) {
             // Use explicit path: run the binary directly
-            const child = spawn(customPath, [`--remote-debugging-port=${port}`], {
+            const child = spawn(customPath, args, {
                 detached: true,
                 stdio: 'ignore',
             });
@@ -91,7 +110,11 @@ function openMacOS(port: number): Promise<void> {
             setTimeout(() => resolve(), 500);
         } else {
             // Default: use macOS `open -a` to find the app in /Applications
-            execFile('open', ['-a', APP_NAME, '--args', `--remote-debugging-port=${port}`], (err) => {
+            const openArgs = ['-a', APP_NAME, '--args', ...args];
+            if (options.userDataDir) {
+                openArgs.unshift('-n');
+            }
+            execFile('open', openArgs, (err) => {
                 if (err) {
                     reject(new Error(`Failed to open ${APP_NAME}: ${err.message}`));
                     return;
@@ -102,11 +125,22 @@ function openMacOS(port: number): Promise<void> {
     });
 }
 
-function openWindows(port: number): Promise<void> {
+function openWindows(port: number, options: LaunchOptions = {}): Promise<void> {
     const executable = getAntigravityCliPath();
+    const args: string[] = [`--remote-debugging-port=${port}`];
+    if (options.newWindow) {
+        args.push('--new-window');
+    }
+    if (options.userDataDir) {
+        args.push(`--user-data-dir=${options.userDataDir}`);
+    }
+    if (options.workspacePath) {
+        args.push(options.workspacePath);
+    }
+
     return new Promise((resolve, reject) => {
         try {
-            const child = spawn(executable, [`--remote-debugging-port=${port}`], {
+            const child = spawn(executable, args, {
                 detached: true,
                 stdio: 'ignore',
                 shell: true,
@@ -123,11 +157,22 @@ function openWindows(port: number): Promise<void> {
     });
 }
 
-function openLinux(port: number): Promise<void> {
+function openLinux(port: number, options: LaunchOptions = {}): Promise<void> {
     const executable = getCustomPath() ?? getAntigravityCliPath();
+    const args: string[] = [`--remote-debugging-port=${port}`];
+    if (options.newWindow) {
+        args.push('--new-window');
+    }
+    if (options.userDataDir) {
+        args.push(`--user-data-dir=${options.userDataDir}`);
+    }
+    if (options.workspacePath) {
+        args.push(options.workspacePath);
+    }
+
     return new Promise((resolve, reject) => {
         try {
-            const child = spawn(executable, [`--remote-debugging-port=${port}`], {
+            const child = spawn(executable, args, {
                 detached: true,
                 stdio: 'ignore',
             });
@@ -164,16 +209,45 @@ function terminateAntigravity(): Promise<void> {
 
 export interface OpenOptions {
     restart?: boolean;
+    isolated?: boolean;
+    newWindow?: boolean;
 }
 
-export async function openAction(options: OpenOptions = {}): Promise<void> {
+export async function openAction(
+    workspaceOrOptions?: string | OpenOptions,
+    options?: OpenOptions,
+): Promise<void> {
+    const opts: OpenOptions =
+        typeof workspaceOrOptions === 'object' && workspaceOrOptions !== null
+            ? workspaceOrOptions
+            : options || {};
+    const targetWorkspace: string | undefined =
+        typeof workspaceOrOptions === 'string' ? workspaceOrOptions : undefined;
+
     const platform = os.platform();
 
     // 1. Check if Antigravity is already running with CDP on any port
     for (const p of CDP_PORTS) {
         if (await checkCdpPort(p)) {
             console.log(`\n  ${C.green}${APP_NAME} is already running with CDP on port ${p}.${C.reset}`);
-            console.log(`  ${C.dim}Run ${C.reset}${C.cyan}antigravity-telegram start${C.reset}${C.dim} to connect the bot.${C.reset}\n`);
+            console.log(`  ${C.cyan}Opening a new separate window for remote/Telegram session...${C.reset}`);
+
+            try {
+                if (platform === 'darwin') {
+                    await openMacOS(p, { newWindow: true, workspacePath: targetWorkspace });
+                } else if (platform === 'win32') {
+                    await openWindows(p, { newWindow: true, workspacePath: targetWorkspace });
+                } else {
+                    await openLinux(p, { newWindow: true, workspacePath: targetWorkspace });
+                }
+                console.log(`  ${C.green}✅ New ${APP_NAME} window opened successfully!${C.reset}`);
+                console.log(`  ${C.dim}Both onsite and remote sessions are now cleanly separated.${C.reset}`);
+                console.log(`  ${C.dim}Run ${C.reset}${C.cyan}antigravity-telegram start${C.reset}${C.dim} to connect the bot.${C.reset}\n`);
+            } catch (err: any) {
+                console.log(`  ${C.yellow}⚠️  Could not trigger a new window automatically: ${err.message}${C.reset}`);
+                console.log(`  ${C.dim}Existing window on port ${p} is still available.${C.reset}`);
+                console.log(`  ${C.dim}Run ${C.reset}${C.cyan}antigravity-telegram start${C.reset}${C.dim} to connect the bot.${C.reset}\n`);
+            }
             return;
         }
     }
@@ -181,18 +255,44 @@ export async function openAction(options: OpenOptions = {}): Promise<void> {
     // 2. Check if Antigravity is already running without CDP
     const isRunning = await isAntigravityRunning();
     if (isRunning) {
-        if (options.restart) {
+        if (opts.restart) {
             console.log(`\n  ${C.cyan}Restarting ${APP_NAME} with remote debugging enabled...${C.reset}`);
             await terminateAntigravity();
             let retries = 10;
             while (retries-- > 0 && (await isAntigravityRunning())) {
                 await new Promise((r) => setTimeout(r, 400));
             }
+        } else if (opts.isolated) {
+            const isolatedDir = path.join(os.homedir(), '.antigravity-telegram-remote', 'antigravity-profile');
+            if (!fs.existsSync(isolatedDir)) {
+                fs.mkdirSync(isolatedDir, { recursive: true });
+            }
+            console.log(`\n  ${C.cyan}Launching isolated ${APP_NAME} instance for remote session...${C.reset}`);
+            console.log(`  ${C.dim}Profile: ${isolatedDir}${C.reset}`);
+
+            const port = (await findAvailablePort()) ?? 9222;
+            if (platform === 'darwin') {
+                await openMacOS(port, { newWindow: true, userDataDir: isolatedDir, workspacePath: targetWorkspace });
+            } else if (platform === 'win32') {
+                await openWindows(port, { newWindow: true, userDataDir: isolatedDir, workspacePath: targetWorkspace });
+            } else {
+                await openLinux(port, { newWindow: true, userDataDir: isolatedDir, workspacePath: targetWorkspace });
+            }
+            const ready = await waitForCdpReady(port, 4000);
+            if (ready) {
+                console.log(`  ${C.green}✅ Isolated ${APP_NAME} instance opened with CDP on port ${port}!${C.reset}`);
+                console.log(`  ${C.dim}Onsite window remains untouched.${C.reset}`);
+                console.log(`  ${C.dim}Run ${C.reset}${C.cyan}antigravity-telegram start${C.reset}${C.dim} to connect the bot.${C.reset}\n`);
+            } else {
+                console.log(`  ${C.yellow}⚠️  Process launched, waiting for port ${port}...${C.reset}\n`);
+            }
+            return;
         } else {
-            console.log(`\n  ${C.yellow}⚠️  ${APP_NAME} is already running without remote debugging (CDP).${C.reset}`);
+            console.log(`\n  ${C.yellow}⚠️  ${APP_NAME} is already running onsite without remote debugging (CDP).${C.reset}`);
             console.log(`  ${C.dim}Electron applications cannot dynamically enable remote debugging once started.${C.reset}\n`);
-            console.log(`  ${C.bold}Options to resolve:${C.reset}`);
-            console.log(`  • Restart automatically: ${C.cyan}npm run open -- --restart${C.reset}  (or: ${C.cyan}antigravity-telegram open --restart${C.reset})`);
+            console.log(`  ${C.bold}Options to resolve (keep onsite work safe or restart):${C.reset}`);
+            console.log(`  • Launch separate remote window (onsite safe): ${C.cyan}npm run open -- --isolated${C.reset}  (or: ${C.cyan}antigravity-telegram open --isolated${C.reset})`);
+            console.log(`  • Restart existing window with CDP:           ${C.cyan}npm run open -- --restart${C.reset}   (or: ${C.cyan}antigravity-telegram open --restart${C.reset})`);
             console.log(`  • Or restart manually:${C.reset}`);
             console.log(`    1. Quit ${APP_NAME} completely (${C.cyan}File > Exit${C.reset} or close all windows).`);
             console.log(`    2. Run: ${C.cyan}antigravity-telegram open${C.reset}`);
@@ -218,11 +318,11 @@ export async function openAction(options: OpenOptions = {}): Promise<void> {
 
     try {
         if (platform === 'darwin') {
-            await openMacOS(port);
+            await openMacOS(port, { workspacePath: targetWorkspace });
         } else if (platform === 'win32') {
-            await openWindows(port);
+            await openWindows(port, { workspacePath: targetWorkspace });
         } else {
-            await openLinux(port);
+            await openLinux(port, { workspacePath: targetWorkspace });
         }
 
         const ready = await waitForCdpReady(port, 4000);
