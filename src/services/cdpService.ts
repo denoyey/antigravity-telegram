@@ -489,8 +489,10 @@ export class CdpService extends EventEmitter {
             logger.debug(`  - page.id="${p.id}" title="${p.title}" url=${p.url}`);
         }
 
-        // 1. Title match (fast path)
-        const titleMatch = workbenchPages.find((t: any) => t.title?.includes(projectName));
+        // 1. Title match (fast path, case-insensitive)
+        const titleMatch = workbenchPages.find((t: any) =>
+            t.title?.toLowerCase().includes(projectName.toLowerCase()),
+        );
         if (titleMatch) {
             return this.connectToPage(titleMatch, projectName);
         }
@@ -502,8 +504,14 @@ export class CdpService extends EventEmitter {
             return true;
         }
 
-        // 3. If not found by probe either, launch a new window
-        return this.launchAndConnectWorkspace(workspacePath, projectName);
+        // Check if an empty/untitled window is already open in Antigravity to reuse it
+        const hasEmptyWorkbench = workbenchPages.some((p: any) => {
+            const title = (p.title || '').trim().toLowerCase();
+            return title === 'antigravity ide' || title.startsWith('get started') || title.includes('untitled');
+        });
+
+        // 3. If not found by probe either, open workspace in Antigravity (reuse empty window if available)
+        return this.launchAndConnectWorkspace(workspacePath, projectName, hasEmptyWorkbench);
     }
 
     /**
@@ -671,19 +679,13 @@ export class CdpService extends EventEmitter {
     private async launchAndConnectWorkspace(
         workspacePath: string,
         projectName: string,
+        reuseExistingWindow: boolean = false,
     ): Promise<boolean> {
-        // This method is only called when no CDP port is responding, meaning
-        // Antigravity is not running (or running without CDP). We must pass
-        // --remote-debugging-port so CDP is available for the poll loop below.
         const antigravityCli = getAntigravityCliPath();
-        const cdpPort = await this.findAvailableCdpPort();
-        if (cdpPort === null) {
-            throw new Error(
-                `No available CDP ports. All candidate ports are in use: ${this.ports.join(', ')}`,
-            );
-        }
+        const cdpPort = (await this.findAvailableCdpPort()) ?? this.ports[0];
 
-        const launchArgs = [`--remote-debugging-port=${cdpPort}`, '--new-window', workspacePath];
+        const windowArg = reuseExistingWindow ? '--reuse-window' : '--new-window';
+        const launchArgs = [`--remote-debugging-port=${cdpPort}`, windowArg, workspacePath];
         logger.debug(`[CdpService] Launching Antigravity: ${antigravityCli} ${launchArgs.join(' ')}`);
         try {
             await this.runCommand(antigravityCli, launchArgs);

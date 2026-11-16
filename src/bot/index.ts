@@ -1419,6 +1419,10 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
             let key = channelKey(ch);
             const guildId = String(ch.chatId);
             const isForum = ctx.chat?.type === 'supergroup' && (ctx.chat as any).is_forum === true;
+            const fullPath = workspaceService.getWorkspacePath(workspacePath);
+            const projectName = bridge.pool.extractProjectName(fullPath);
+
+            let topicId: number | undefined;
 
             // Auto-create topic if conditions are met
             if (config.useTopics && isForum && !ch.threadId) {
@@ -1426,7 +1430,6 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
                     const existing = workspaceBindingRepo.findByWorkspacePathAndGuildId(workspacePath, guildId);
                     const existingTopic = existing.find(b => b.channelId.includes(':'));
 
-                    let topicId: number;
                     if (existingTopic) {
                         topicId = Number(existingTopic.channelId.split(':')[1]);
                         topicManager.registerTopic(workspacePath, topicId);
@@ -1438,17 +1441,6 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
                     }
 
                     key = `${ch.chatId}:${topicId}`;
-
-                    // Send welcome message in the new topic
-                    const fullPath = workspaceService.getWorkspacePath(workspacePath);
-                    await bot.api.sendMessage(
-                        ch.chatId,
-                        `<b>📁 Project Selected</b>\n\n✅ <b>${escapeHtml(workspacePath)}</b>\n<code>${escapeHtml(fullPath)}</code>\n\nSend messages here to interact with this project.`,
-                        { parse_mode: 'HTML', message_thread_id: topicId },
-                    );
-                    workspaceBindingRepo.upsert({ channelId: key, workspacePath, guildId });
-                    await ctx.answerCallbackQuery({ text: `Topic created for: ${workspacePath}` });
-                    return;
                 } catch (e: any) {
                     logger.warn(`[ProjectSelect] Topic creation failed, falling back: ${e.message}`);
                     // Fall through to default behavior
@@ -1456,13 +1448,40 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
             }
 
             workspaceBindingRepo.upsert({ channelId: key, workspacePath, guildId });
+            await ctx.answerCallbackQuery({ text: `Opening ${projectName}...` }).catch(() => {});
 
-            const fullPath = workspaceService.getWorkspacePath(workspacePath);
-            await ctx.editMessageText(
-                `<b>📁 Project Selected</b>\n\n✅ <b>${escapeHtml(workspacePath)}</b>\n<code>${escapeHtml(fullPath)}</code>\n\nSend messages here to interact with this project.`,
-                { parse_mode: 'HTML' },
-            );
-            await ctx.answerCallbackQuery({ text: `Selected: ${workspacePath}` });
+            // Auto-open and connect to this workspace in Antigravity IDE
+            let connectionNotice = '';
+            try {
+                logger.info(`[ProjectSelect] Opening/connecting workspace "${projectName}" (${fullPath})...`);
+                const cdp = await bridge.pool.getOrConnect(fullPath);
+                bridge.lastActiveWorkspace = projectName;
+                const activeChannel: TelegramChannel = { chatId: ch.chatId, threadId: topicId ?? ch.threadId };
+                bridge.lastActiveChannel = activeChannel;
+                registerApprovalWorkspaceChannel(bridge, projectName, activeChannel);
+                ensureApprovalDetector(bridge, cdp, projectName);
+                ensureErrorPopupDetector(bridge, cdp, projectName);
+                ensurePlanningDetector(bridge, cdp, projectName);
+                connectionNotice = '\n\n🟢 <b>Connected to Antigravity IDE.</b>';
+            } catch (err: any) {
+                logger.warn(`[ProjectSelect] Could not connect/open workspace in IDE: ${err.message}`);
+                connectionNotice = `\n\n⚠️ <i>Bound to chat, but failed to connect in Antigravity IDE: ${escapeHtml(err.message)}</i>`;
+            }
+
+            const messageText = `<b>📁 Project Selected</b>\n\n✅ <b>${escapeHtml(workspacePath)}</b>\n<code>${escapeHtml(fullPath)}</code>${connectionNotice}\n\nSend messages here to interact with this project.`;
+
+            if (topicId !== undefined) {
+                await bot.api.sendMessage(
+                    ch.chatId,
+                    messageText,
+                    { parse_mode: 'HTML', message_thread_id: topicId },
+                );
+            } else {
+                await ctx.editMessageText(
+                    messageText,
+                    { parse_mode: 'HTML' },
+                );
+            }
             return;
         }
 

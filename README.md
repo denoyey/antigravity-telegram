@@ -269,7 +269,7 @@ npm run doctor
 
 | Slash Command | Context | Description |
 | :--- | :--- | :--- |
-| `/project` | Topic / DM | Open interactive menu to select and bind a workspace to the current topic. |
+| `/project` | Topic / DM | Open interactive menu to select, open in Antigravity IDE, and bind a workspace to the current topic. |
 | `/status` | Any | View active CDP connection, bound workspace, current AI model, and token quota. |
 | `/new` | Topic / DM | Start a fresh conversational session in the bound workspace, clearing history. |
 | `/chat` | Topic / DM | Browse and switch between previous chat sessions saved for this workspace. |
