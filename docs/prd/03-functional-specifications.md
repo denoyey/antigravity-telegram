@@ -24,17 +24,29 @@ Antigravity Telegram provides a unified CLI entry point (`antigravity-telegram` 
 | Command | Arguments | Context | Description & Behavior |
 | :--- | :--- | :--- | :--- |
 | `/project` | `[search_term]` | Group / DM | Displays an interactive `InlineKeyboard` listing discovered projects under `WORKSPACE_BASE_DIR`. Selecting a project binds it to the current topic, automatically opens/switches the workspace in Antigravity IDE (reusing empty windows when available), and initializes event detectors. |
-| `/new` | None | Topic / DM | Spawns a brand-new chat session in the active Antigravity workspace window, clearing previous conversational context. |
+| `/new` | None | Topic / DM | Spawns a brand-new chat session in the active Antigravity workspace window. Interacts directly with the chat webview target (`[data-testid="extension-new-conversation"]`, `[aria-label="New Conversation"]`), resetting context cleanly. |
 | `/chat` | None | Topic / DM | Displays active workspace binding details, connection state, live chat session title (extracted via CDP and Antigravity IDE webview inspection), and lists saved sessions for the current workspace. |
 | `/model` | None | Any | Displays available LLM models configured in Antigravity (e.g. Gemini Pro, Flash, Claude, etc.) and allows one-tap model switching. |
 | `/mode` | None | Any | Toggles Antigravity operation modes (e.g., Code / Architect / Ask / Plan). |
 | `/template`| `[name]` | Any | Lists or applies reusable prompt templates from SQLite. Allows swift insertion of frequently used coding prompts. |
-| `/stop` | None | Topic / DM | Immediately halts the currently executing prompt in the bound workspace by triggering the Antigravity stop button. |
+| `/stop` | None | Topic / DM | Immediately halts the currently executing prompt or task in the bound workspace by triggering the Antigravity webview stop/cancel button (`[data-testid="input-cancel-button"]`, `Cancel (Ctrl+D)`, `Stop execution`). |
 | `/screenshot` | None | Topic / DM | Captures a high-resolution PNG screenshot of the Antigravity IDE window and delivers it directly to the Telegram thread. |
 | `/status` | None | Any | Summarizes system state: active CDP connection, bound workspace, current model, remaining quota, and uptime. |
 | `/autoaccept` | None | Any | Toggles auto-accept mode (`ALL`, `SAFE_ONLY`, `OFF`) for approving file edits, command runs, and plan steps without manual taps. |
 | `/cleanup` | `[days]` | Any | Displays an interactive menu to purge old sessions, orphan bindings, and logs older than the specified retention window (default: 30 days). |
 | `/help` | None | Any | Shows a human-crafted cheat sheet of commands, keyboard shortcuts, and tips. |
+
+#### 1.3. Webview Target Delegation for Session Control (`/new` and `/stop`)
+
+In Antigravity IDE, conversational chat interface elements reside within an `iframe` webview target rather than the outer `workbench.html` document:
+- **New Conversation (`/new`)**:
+  - `CdpService.clickWebviewNewChat()` locates the child iframe target (`/c/<conversation-id>`) via CDP port scanning and evaluates `[data-testid="extension-new-conversation"]` and `[aria-label="New Conversation"]`.
+  - When invoked, it safely clicks the button directly in the webview DOM, resetting context to a clean session and updating document title.
+  - Automatically falls back to in-process cascade panel contexts for backward compatibility.
+- **Stop Execution (`/stop`)**:
+  - `CdpService.clickStopButton()` inspects the chat webview target first, targeting active cancel/interrupt buttons (`button[data-testid="input-cancel-button"]`, `[data-tooltip-id="input-send-button-cancel-tooltip"]`, `button[aria-label*="Cancel"]`, `button[aria-label*="Stop execution"]`).
+  - Halts the running generation immediately without tearing down the WebSocket connection, applying an auto-expiring 30-second stop latch to avoid phantom stream re-triggers.
+  - Falls back to in-process context evaluation (`RESPONSE_SELECTORS.CLICK_STOP_BUTTON`) if the webview target is unreachable.
 
 ---
 

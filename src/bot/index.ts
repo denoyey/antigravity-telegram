@@ -1233,13 +1233,18 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
         if (!cdp) { await ctx.reply('⚠️ Not connected to CDP.'); return; }
 
         try {
-            const contextId = cdp.getPrimaryContextId();
-            const callParams: Record<string, unknown> = { expression: RESPONSE_SELECTORS.CLICK_STOP_BUTTON, returnByValue: true, awaitPromise: false };
-            if (contextId !== null) callParams.contextId = contextId;
-            const result = await cdp.call('Runtime.evaluate', callParams);
-            const value = result?.result?.value;
+            let stopResult: { ok: boolean; method?: string; error?: string } = { ok: false };
+            if (typeof cdp.clickStopButton === 'function') {
+                stopResult = await cdp.clickStopButton();
+            } else {
+                const contextId = cdp.getPrimaryContextId();
+                const callParams: Record<string, unknown> = { expression: RESPONSE_SELECTORS.CLICK_STOP_BUTTON, returnByValue: true, awaitPromise: false };
+                if (contextId !== null) callParams.contextId = contextId;
+                const result = await cdp.call('Runtime.evaluate', callParams);
+                stopResult = result?.result?.value ?? { ok: false, error: 'Stop button not found.' };
+            }
 
-            if (value?.ok) {
+            if (stopResult.ok) {
                 const ch = getChannel(ctx);
                 const key = channelKey(ch);
                 userStopRequestedChannels.add(key);
@@ -1249,7 +1254,7 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
                 }, 30000);
                 await replyHtml(ctx, `<b>⏹️ Generation Interrupted</b>\nAI response generation was safely stopped.`);
             } else {
-                await replyHtml(ctx, `<b>⚠️ Could Not Stop</b>\n${escapeHtml(value?.error || 'Stop button not found.')}`);
+                await replyHtml(ctx, `<b>⚠️ Could Not Stop</b>\n${escapeHtml(stopResult.error || 'Stop button not found.')}`);
             }
         } catch (e: any) {
             await ctx.reply(`❌ Error during stop: ${e.message}`);

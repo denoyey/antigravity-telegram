@@ -273,12 +273,12 @@ npm run doctor
 | :--- | :--- | :--- |
 | `/project` | Topic / DM | Open interactive menu to select, open in Antigravity IDE, and bind a workspace to the current topic. |
 | `/status` | Any | View active CDP connection, bound workspace, current AI model, and token quota. |
-| `/new` | Topic / DM | Start a fresh conversational session in the bound workspace, clearing history. |
+| `/new` | Topic / DM | Start a fresh conversational session via webview CDP delegation, clearing context. |
 | `/chat` | Topic / DM | View active workspace binding, live IDE chat session status, and browse saved sessions. |
 | `/screenshot` | Topic / DM | Capture an instant high-resolution PNG screenshot of the Antigravity IDE window. |
 | `/model` | Any | Switch active AI model (Gemini Pro, Flash, Claude Sonnet, etc.) with 1 tap. |
 | `/mode` | Any | Toggle operation modes (`Fast`, `Plan`, `Code`, `Ask`). |
-| `/stop` | Topic / DM | Immediately halt the executing prompt or command in the bound workspace. |
+| `/stop` | Topic / DM | Immediately halt the executing prompt or command via webview cancel button delegation. |
 | `/autoaccept` | Any | Configure auto-approval mode (`ALL`, `SAFE_ONLY`, `OFF`) for file edits and commands. |
 | `/template` | Any | Manage and quickly inject reusable prompt templates from SQLite. |
 | `/cleanup [days]`| Any | Purge inactive sessions and reclaim database storage (default: 30 days). |

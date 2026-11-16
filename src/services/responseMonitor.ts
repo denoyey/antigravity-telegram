@@ -152,7 +152,7 @@ export const RESPONSE_SELECTORS = {
         const scopes = [panel, document].filter(Boolean);
 
         for (const scope of scopes) {
-            const el = scope.querySelector('[data-tooltip-id="input-send-button-cancel-tooltip"]');
+            const el = scope.querySelector('[data-tooltip-id="input-send-button-cancel-tooltip"], button[data-testid="input-cancel-button"], button[data-testid="extension-stop-button"]');
             if (el && typeof el.click === 'function') {
                 el.click();
                 return { ok: true, method: 'tooltip-id' };
@@ -914,6 +914,16 @@ export class ResponseMonitor {
     /** Click the stop button to interrupt LLM generation */
     async clickStopButton(): Promise<{ ok: boolean; method?: string; error?: string }> {
         try {
+            if (typeof (this.cdpService as any).clickStopButton === 'function') {
+                const res = await (this.cdpService as any).clickStopButton();
+                if (res?.ok) {
+                    if (this.isRunning) {
+                        await this.stop();
+                    }
+                    return res;
+                }
+            }
+
             const result = await this.cdpService.call(
                 'Runtime.evaluate',
                 this.buildEvaluateParams(RESPONSE_SELECTORS.CLICK_STOP_BUTTON),

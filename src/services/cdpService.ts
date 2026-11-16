@@ -962,10 +962,10 @@ export class CdpService extends EventEmitter {
     }
 
     /**
-     * Inspect webview targets associated with this workbench to extract the current chat title.
-     * In Antigravity IDE, the chat UI is hosted inside an iframe webview target with its own CDP endpoint.
+     * Locate the chat webview CDP target associated with this workbench.
+     * Antigravity IDE hosts its chat interface inside an iframe webview target with a separate WebSocket URL.
      */
-    async getWebviewSessionInfo(): Promise<{ title: string; hasActiveChat: boolean } | null> {
+    async getChatWebviewTarget(): Promise<any | null> {
         try {
             const match = this.targetUrl?.match(/\/devtools\/page\/([a-zA-Z0-9_-]+)/);
             const targetPageId = match ? match[1] : null;
@@ -989,70 +989,266 @@ export class CdpService extends EventEmitter {
             );
 
             const combinedTargets = [...candidates.filter(t => t.type === 'iframe' && t.url?.includes('/c/')), ...matchTargets];
-            const target = combinedTargets[0];
-            if (!target || !target.webSocketDebuggerUrl) return null;
+            return combinedTargets[0] || null;
+        } catch (err) {
+            logger.debug('[CdpService] getChatWebviewTarget failed:', err);
+            return null;
+        }
+    }
 
-            return await new Promise<{ title: string; hasActiveChat: boolean } | null>((resolve) => {
-                const ws = new WebSocket(target.webSocketDebuggerUrl);
-                const timeout = setTimeout(() => {
-                    try { ws.terminate(); } catch { }
-                    resolve(null);
-                }, 3000);
+    /**
+     * Evaluate a JavaScript expression inside the chat webview target.
+     * Connects via temporary WebSocket to the webview's debug URL.
+     */
+    async evaluateInChatWebview<T = any>(expression: string, timeoutMs = 4000): Promise<T | null> {
+        const target = await this.getChatWebviewTarget();
+        if (!target || !target.webSocketDebuggerUrl) return null;
 
-                ws.on('open', () => {
-                    ws.send(JSON.stringify({
-                        id: 1,
-                        method: 'Runtime.evaluate',
-                        params: {
-                            expression: 'document.title',
-                            returnByValue: true,
-                        },
-                    }));
-                });
+        return await new Promise<T | null>((resolve) => {
+            const ws = new WebSocket(target.webSocketDebuggerUrl);
+            const timeout = setTimeout(() => {
+                try { ws.terminate(); } catch { }
+                resolve(null);
+            }, timeoutMs);
 
-                ws.on('message', (msg) => {
-                    clearTimeout(timeout);
-                    try {
-                        const data = JSON.parse(msg.toString());
-                        const rawTitle = (data?.result?.result?.value || '').trim();
-                        ws.close();
-                        if (!rawTitle) return resolve(null);
-
-                        // Format: "<Conversation Title> - <Workspace Name> - Antigravity"
-                        const parts = rawTitle.split(/\s*-\s*/);
-                        if (parts.length > 1 && parts[parts.length - 1].toLowerCase().includes('antigravity')) {
-                            parts.pop();
-                        }
-                        const wsName = this.currentWorkspaceName || (this.currentWorkspacePath ? extractProjectNameFromPath(this.currentWorkspacePath) : '');
-                        if (parts.length > 1 && (
-                            (wsName && parts[parts.length - 1].toLowerCase() === wsName.toLowerCase()) ||
-                            parts[parts.length - 1].toLowerCase().includes('outside of project')
-                        )) {
-                            parts.pop();
-                        }
-                        const title = parts.join(' - ').trim();
-                        const isNewOrEmpty = !title ||
-                            title.toLowerCase() === 'antigravity' ||
-                            title.toLowerCase() === 'agent' ||
-                            title.toLowerCase().includes('new conversation');
-
-                        resolve({
-                            title: isNewOrEmpty ? '(No active chat)' : title,
-                            hasActiveChat: !isNewOrEmpty,
-                        });
-                    } catch {
-                        resolve(null);
-                    }
-                });
-
-                ws.on('error', () => {
-                    clearTimeout(timeout);
-                    resolve(null);
-                });
+            ws.on('open', () => {
+                ws.send(JSON.stringify({
+                    id: 1,
+                    method: 'Runtime.evaluate',
+                    params: {
+                        expression,
+                        returnByValue: true,
+                        awaitPromise: true,
+                    },
+                }));
             });
+
+            ws.on('message', (msg) => {
+                clearTimeout(timeout);
+                try {
+                    const data = JSON.parse(msg.toString());
+                    ws.close();
+                    if (data?.result?.result?.value !== undefined) {
+                        return resolve(data.result.result.value);
+                    }
+                    resolve(null);
+                } catch {
+                    resolve(null);
+                }
+            });
+
+            ws.on('error', () => {
+                clearTimeout(timeout);
+                resolve(null);
+            });
+        });
+    }
+
+    /**
+     * Inspect webview targets associated with this workbench to extract the current chat title.
+     * In Antigravity IDE, the chat UI is hosted inside an iframe webview target with its own CDP endpoint.
+     */
+    async getWebviewSessionInfo(): Promise<{ title: string; hasActiveChat: boolean } | null> {
+        try {
+            const rawTitle = await this.evaluateInChatWebview<string>('document.title');
+            if (!rawTitle || typeof rawTitle !== 'string') return null;
+            const trimmed = rawTitle.trim();
+            if (!trimmed) return null;
+
+            // Format: "<Conversation Title> - <Workspace Name> - Antigravity"
+            const parts = trimmed.split(/\s*-\s*/);
+            if (parts.length > 1 && parts[parts.length - 1].toLowerCase().includes('antigravity')) {
+                parts.pop();
+            }
+            const wsName = this.currentWorkspaceName || (this.currentWorkspacePath ? extractProjectNameFromPath(this.currentWorkspacePath) : '');
+            if (parts.length > 1 && (
+                (wsName && parts[parts.length - 1].toLowerCase() === wsName.toLowerCase()) ||
+                parts[parts.length - 1].toLowerCase().includes('outside of project')
+            )) {
+                parts.pop();
+            }
+            const title = parts.join(' - ').trim();
+            const isNewOrEmpty = !title ||
+                title.toLowerCase() === 'antigravity' ||
+                title.toLowerCase() === 'agent' ||
+                title.toLowerCase().includes('new conversation');
+
+            return {
+                title: isNewOrEmpty ? '(No active chat)' : title,
+                hasActiveChat: !isNewOrEmpty,
+            };
         } catch (err) {
             logger.debug('[CdpService] getWebviewSessionInfo failed:', err);
             return null;
+        }
+    }
+
+    /**
+     * Click the "New Conversation" button inside the Antigravity chat webview.
+     */
+    async clickWebviewNewChat(): Promise<{ ok: boolean; alreadyNew?: boolean; error?: string }> {
+        const script = `(() => {
+            const selectors = [
+                'button[data-testid="extension-new-conversation"]',
+                'button[aria-label="New Conversation"]',
+                'button[aria-label*="New Conversation" i]',
+                'button[aria-label*="new chat" i]',
+                '[data-tooltip-id="new-conversation-tooltip"]',
+            ];
+            let btn = null;
+            for (const sel of selectors) {
+                btn = document.querySelector(sel);
+                if (btn) break;
+            }
+            if (!btn) {
+                const buttons = Array.from(document.querySelectorAll('button, [role="button"]'));
+                btn = buttons.find(b => {
+                    const label = (b.getAttribute('aria-label') || b.innerText || '').toLowerCase();
+                    return label.includes('new conversation') || label === 'new chat';
+                });
+            }
+            if (!btn) {
+                return { ok: false, error: 'New chat button not found in chat webview' };
+            }
+
+            const cursor = window.getComputedStyle(btn).cursor;
+            const isDisabled = btn.disabled || btn.getAttribute('aria-disabled') === 'true' || cursor === 'not-allowed';
+            if (isDisabled) {
+                return { ok: true, alreadyNew: true };
+            }
+
+            if (typeof btn.click === 'function') {
+                btn.click();
+                return { ok: true };
+            }
+            return { ok: false, error: 'Button found but click() is not a function' };
+        })()`;
+
+        try {
+            const res = await this.evaluateInChatWebview<{ ok: boolean; alreadyNew?: boolean; error?: string }>(script);
+            if (!res) {
+                return { ok: false, error: 'Chat webview target not reachable' };
+            }
+            return res;
+        } catch (err: any) {
+            return { ok: false, error: err?.message || 'Failed to click new chat button' };
+        }
+    }
+
+    /**
+     * Click the stop/cancel button to interrupt active generation in Antigravity.
+     * Tries the chat webview first (modern Antigravity IDE), then falls back to in-process contexts (legacy cascade panel).
+     */
+    async clickStopButton(): Promise<{ ok: boolean; method?: string; error?: string }> {
+        // Step 1: Try in chat webview (primary modern Antigravity target)
+        const webviewScript = `(() => {
+            const cancelSelectors = [
+                'button[data-testid="input-cancel-button"]',
+                'button[data-testid="extension-stop-button"]',
+                '[data-tooltip-id="input-send-button-cancel-tooltip"]',
+                'button[aria-label*="Cancel" i]',
+                'button[aria-label*="Stop execution" i]',
+                'button[aria-label*="Stop" i]',
+                'button[title*="Cancel" i]',
+                'button[title*="Stop" i]',
+            ];
+            for (const sel of cancelSelectors) {
+                const btn = document.querySelector(sel);
+                if (btn && typeof btn.click === 'function') {
+                    btn.click();
+                    return { ok: true, method: 'webview: ' + sel };
+                }
+            }
+
+            // Fallback: search all buttons for stop/cancel label
+            const normalize = (value) => (value || '').toLowerCase().replace(/\\s+/g, ' ').trim();
+            const STOP_PATTERNS = [
+                /^stop$/, /^cancel$/, /^stop generating$/, /^stop execution$/, /^stop response$/,
+                /^cancel \\(ctrl\\+d\\)$/, /^cancel \\(cmd\\+d\\)$/,
+                /^停止$/, /^キャンセル$/, /^batal$/, /^hentikan$/
+            ];
+            const buttons = Array.from(document.querySelectorAll('button, [role="button"]'));
+            for (const btn of buttons) {
+                const text = normalize(btn.textContent || '');
+                const label = normalize(btn.getAttribute('aria-label') || '');
+                const title = normalize(btn.getAttribute('title') || '');
+                if (STOP_PATTERNS.some(re => re.test(text) || re.test(label) || re.test(title))) {
+                    if (typeof btn.click === 'function') {
+                        btn.click();
+                        return { ok: true, method: 'webview: text-match' };
+                    }
+                }
+            }
+            return { ok: false, error: 'Stop button not found in chat webview' };
+        })()`;
+
+        try {
+            const webviewRes = await this.evaluateInChatWebview<{ ok: boolean; method?: string; error?: string }>(webviewScript);
+            if (webviewRes && webviewRes.ok) {
+                return webviewRes;
+            }
+        } catch (err) {
+            logger.debug('[CdpService] clickStopButton webview attempt failed:', err);
+        }
+
+        // Step 2: Fall back to in-process context evaluation (legacy Windsurf / cascade panel)
+        try {
+            const fallbackScript = `(() => {
+                const panel = document.querySelector('.antigravity-agent-side-panel');
+                const scopes = [panel, document].filter(Boolean);
+
+                for (const scope of scopes) {
+                    const el = scope.querySelector('[data-tooltip-id="input-send-button-cancel-tooltip"], button[data-testid="input-cancel-button"]');
+                    if (el && typeof el.click === 'function') {
+                        el.click();
+                        return { ok: true, method: 'tooltip-id' };
+                    }
+                }
+
+                const normalize = (value) => (value || '').toLowerCase().replace(/\\s+/g, ' ').trim();
+                const STOP_PATTERNS = [
+                    /^stop$/, /^cancel$/, /^stop generating$/, /^stop response$/,
+                    /^停止$/, /^生成を停止$/, /^応答を停止$/
+                ];
+                const isStopLabel = (value) => {
+                    const normalized = normalize(value);
+                    if (!normalized) return false;
+                    return STOP_PATTERNS.some((re) => re.test(normalized));
+                };
+                for (const scope of scopes) {
+                    const buttons = scope.querySelectorAll('button, [role="button"]');
+                    for (let i = 0; i < buttons.length; i++) {
+                        const btn = buttons[i];
+                        const labels = [
+                            btn.textContent || '',
+                            btn.getAttribute('aria-label') || '',
+                            btn.getAttribute('title') || '',
+                        ];
+                        if (labels.some(isStopLabel) && typeof btn.click === 'function') {
+                            btn.click();
+                            return { ok: true, method: 'text-fallback' };
+                        }
+                    }
+                }
+
+                return { ok: false, error: 'Stop button not found' };
+            })()`;
+
+            const contextId = this.getPrimaryContextId();
+            const callParams: Record<string, unknown> = {
+                expression: fallbackScript,
+                returnByValue: true,
+                awaitPromise: false,
+            };
+            if (contextId !== null) callParams.contextId = contextId;
+            const result = await this.call('Runtime.evaluate', callParams);
+            const value = result?.result?.value;
+            if (value?.ok) {
+                return value;
+            }
+            return value ?? { ok: false, error: 'Stop button not found' };
+        } catch (err: any) {
+            return { ok: false, error: err?.message || 'Failed to click stop button' };
         }
     }
 

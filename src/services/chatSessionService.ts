@@ -19,13 +19,25 @@ export interface ChatSessionInfo {
 
 /** Script to get the state of the new chat button */
 const GET_NEW_CHAT_BUTTON_SCRIPT = `(() => {
-    const btn = document.querySelector('[data-tooltip-id="new-conversation-tooltip"]');
+    const selectors = [
+        'button[data-testid="extension-new-conversation"]',
+        'button[aria-label="New Conversation"]',
+        'button[aria-label*="New Conversation" i]',
+        'button[aria-label*="new chat" i]',
+        '[data-tooltip-id="new-conversation-tooltip"]',
+    ];
+    let btn = null;
+    for (const sel of selectors) {
+        btn = document.querySelector(sel);
+        if (btn) break;
+    }
     if (!btn) return { found: false };
     const cursor = window.getComputedStyle(btn).cursor;
+    const isDisabled = btn.disabled || btn.getAttribute('aria-disabled') === 'true' || cursor === 'not-allowed';
     const rect = btn.getBoundingClientRect();
     return {
         found: true,
-        enabled: cursor === 'pointer',
+        enabled: !isDisabled,
         cursor,
         x: Math.round(rect.x + rect.width / 2),
         y: Math.round(rect.y + rect.height / 2),
@@ -568,6 +580,15 @@ export class ChatSessionService extends BaseService {
      */
     async startNewChat(cdpService: CdpService): Promise<{ ok: boolean; error?: string }> {
         try {
+            // Strategy 1 (modern Antigravity IDE): Attempt click via chat webview target
+            if (typeof (cdpService as any).clickWebviewNewChat === 'function') {
+                const webviewRes = await (cdpService as any).clickWebviewNewChat();
+                if (webviewRes && webviewRes.ok) {
+                    return { ok: true };
+                }
+            }
+
+            // Strategy 2: Legacy context-based button search
             // Contexts may be empty right after Antigravity starts.
             // Wait up to 10 seconds for the cascade-panel to become ready.
             let contexts = cdpService.getContexts();

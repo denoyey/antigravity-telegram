@@ -18,6 +18,18 @@ describe('ChatSessionService', () => {
     });
 
     describe('startNewChat()', () => {
+        it('prioritizes clickWebviewNewChat when available on CdpService', async () => {
+            const webviewMockCdp: any = {
+                clickWebviewNewChat: jest.fn().mockResolvedValue({ ok: true }),
+                getContexts: jest.fn().mockReturnValue([]),
+            };
+
+            const result = await service.startNewChat(webviewMockCdp);
+
+            expect(result.ok).toBe(true);
+            expect(webviewMockCdp.clickWebviewNewChat).toHaveBeenCalledTimes(1);
+        });
+
         it('opens a new chat via coordinate click when the button is enabled', async () => {
             // 1st call: button enabled (cursor:pointer), 2nd call: button disabled (cursor:not-allowed)
             let callCount = 0;
