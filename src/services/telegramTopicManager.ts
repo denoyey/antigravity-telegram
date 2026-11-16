@@ -25,10 +25,13 @@ export class TelegramTopicManager extends BaseService {
     /**
      * Ensure a forum topic exists for the given workspace name.
      * Creates a new topic if it doesn't exist; returns existing topic_id otherwise.
+     * Set forceCreate=true to bypass cache and create a fresh topic (e.g. after topic deletion).
      */
-    public async ensureTopic(workspaceName: string): Promise<EnsureTopicResult> {
-        const cached = this.topicCache.get(workspaceName);
-        if (cached) return { topicId: cached, created: false };
+    public async ensureTopic(workspaceName: string, forceCreate: boolean = false): Promise<EnsureTopicResult> {
+        if (!forceCreate) {
+            const cached = this.topicCache.get(workspaceName);
+            if (cached) return { topicId: cached, created: false };
+        }
 
         try {
             const topic = await this.api.createForumTopic(this.chatId, `🗂️ ${workspaceName}`);
@@ -92,6 +95,10 @@ export class TelegramTopicManager extends BaseService {
 
     public registerTopic(workspaceName: string, topicId: number): void {
         this.topicCache.set(workspaceName, topicId);
+    }
+
+    public removeTopic(workspaceName: string): void {
+        this.topicCache.delete(workspaceName);
     }
 
     public getTopicId(workspaceName: string): number | undefined {

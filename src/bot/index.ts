@@ -1471,11 +1471,47 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
             const messageText = `<b>📁 Project Selected</b>\n\n✅ <b>${escapeHtml(workspacePath)}</b>\n<code>${escapeHtml(fullPath)}</code>${connectionNotice}\n\nSend messages here to interact with this project.`;
 
             if (topicId !== undefined) {
-                await bot.api.sendMessage(
-                    ch.chatId,
-                    messageText,
-                    { parse_mode: 'HTML', message_thread_id: topicId },
-                );
+                try {
+                    await bot.api.sendMessage(
+                        ch.chatId,
+                        messageText,
+                        { parse_mode: 'HTML', message_thread_id: topicId },
+                    );
+                } catch (sendErr: any) {
+                    const isThreadNotFound =
+                        sendErr?.description?.includes('message thread not found') ||
+                        sendErr?.message?.includes('message thread not found');
+
+                    if (isThreadNotFound) {
+                        logger.warn(`[ProjectSelect] Stale topic ${topicId} not found in Telegram (deleted by user). Creating fresh topic...`);
+                        workspaceBindingRepo.deleteByChannelId(`${ch.chatId}:${topicId}`);
+                        topicManager.setChatId(ch.chatId);
+                        topicManager.removeTopic(workspacePath);
+                        const sanitized = topicManager.sanitizeName(workspacePath);
+                        const freshResult = await topicManager.ensureTopic(sanitized, true);
+                        topicId = freshResult.topicId;
+                        key = `${ch.chatId}:${topicId}`;
+                        workspaceBindingRepo.upsert({ channelId: key, workspacePath, guildId });
+
+                        const activeChannel: TelegramChannel = { chatId: ch.chatId, threadId: topicId };
+                        bridge.lastActiveChannel = activeChannel;
+                        registerApprovalWorkspaceChannel(bridge, projectName, activeChannel);
+
+                        await bot.api.sendMessage(
+                            ch.chatId,
+                            messageText,
+                            { parse_mode: 'HTML', message_thread_id: topicId },
+                        );
+                    } else {
+                        throw sendErr;
+                    }
+                }
+
+                // Update the picker message in the originating thread/general
+                await ctx.editMessageText(
+                    `<b>📁 Project Selected</b>\n\n✅ <b>${escapeHtml(workspacePath)}</b>\n\n👉 <i>Dedicated topic created! Please switch to the <b>${escapeHtml(workspacePath)}</b> topic to interact with this project.</i>`,
+                    { parse_mode: 'HTML' },
+                ).catch(() => {});
             } else {
                 await ctx.editMessageText(
                     messageText,
