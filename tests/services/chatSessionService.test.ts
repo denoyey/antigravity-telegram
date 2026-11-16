@@ -147,6 +147,22 @@ describe('ChatSessionService', () => {
             expect(info.title).toBe('(Failed to retrieve)');
             expect(info.hasActiveChat).toBe(false);
         });
+
+        it('falls back to getWebviewSessionInfo when DOM contexts return no title', async () => {
+            mockCdpService.call.mockResolvedValue({
+                result: { value: null }
+            });
+            (mockCdpService as any).getWebviewSessionInfo = jest.fn().mockResolvedValue({
+                title: 'Antigravity Webview Chat',
+                hasActiveChat: true,
+            });
+
+            const info = await service.getCurrentSessionInfo(mockCdpService);
+
+            expect(info.title).toBe('Antigravity Webview Chat');
+            expect(info.hasActiveChat).toBe(true);
+            expect((mockCdpService as any).getWebviewSessionInfo).toHaveBeenCalled();
+        });
     });
 
     describe('activateSessionByTitle()', () => {

@@ -272,7 +272,7 @@ npm run doctor
 | `/project` | Topic / DM | Open interactive menu to select, open in Antigravity IDE, and bind a workspace to the current topic. |
 | `/status` | Any | View active CDP connection, bound workspace, current AI model, and token quota. |
 | `/new` | Topic / DM | Start a fresh conversational session in the bound workspace, clearing history. |
-| `/chat` | Topic / DM | Browse and switch between previous chat sessions saved for this workspace. |
+| `/chat` | Topic / DM | View active workspace binding, live IDE chat session status, and browse saved sessions. |
 | `/screenshot` | Topic / DM | Capture an instant high-resolution PNG screenshot of the Antigravity IDE window. |
 | `/model` | Any | Switch active AI model (Gemini Pro, Flash, Claude Sonnet, etc.) with 1 tap. |
 | `/mode` | Any | Toggle operation modes (`Fast`, `Plan`, `Code`, `Ask`). |

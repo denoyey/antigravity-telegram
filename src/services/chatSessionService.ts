@@ -646,7 +646,7 @@ export class ChatSessionService extends BaseService {
                         contextId: ctx.id,
                     });
                     const value = result?.result?.value;
-                    if (value && value.title) {
+                    if (value && value.title && value.title !== '(Untitled)') {
                         return {
                             title: value.title,
                             hasActiveChat: value.hasActiveChat ?? false,
@@ -654,6 +654,15 @@ export class ChatSessionService extends BaseService {
                     }
                 } catch (_) { /* try next context */ }
             }
+
+            // Fallback: query Antigravity IDE webview target for active chat title
+            if (typeof (cdpService as any).getWebviewSessionInfo === 'function') {
+                const webviewInfo = await (cdpService as any).getWebviewSessionInfo();
+                if (webviewInfo) {
+                    return webviewInfo;
+                }
+            }
+
             return { title: '(Failed to retrieve)', hasActiveChat: false };
         } catch (error) {
             return { title: '(Failed to retrieve)', hasActiveChat: false };

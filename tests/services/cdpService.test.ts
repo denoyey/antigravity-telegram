@@ -64,6 +64,15 @@ describe('CdpService - Target Detection & Connection', () => {
 
                 if (req.method === 'Network.enable' || req.method === 'Runtime.addBinding') {
                     ws.send(JSON.stringify({ id: req.id, result: {} }));
+                    return;
+                }
+
+                if (req.method === 'Runtime.evaluate' && req.params?.expression === 'document.title') {
+                    ws.send(JSON.stringify({
+                        id: req.id,
+                        result: { result: { value: 'Feature Work - Antigravity Workspace - Antigravity' } }
+                    }));
+                    return;
                 }
             });
         });
@@ -121,5 +130,26 @@ describe('CdpService - Target Detection & Connection', () => {
 
         await disconnectPromise;
         expect(service.isConnected()).toBe(false);
+    });
+
+    it('extracts chat title from webview target via getWebviewSessionInfo', async () => {
+        const webviewTarget = {
+            id: 'webview-id',
+            type: 'iframe',
+            parentId: 'test-id',
+            title: 'http://127.0.0.1:35895/c/test-chat?workspaceUri=file%3A%2F%2F%2Fsome%2Fpath',
+            url: 'http://127.0.0.1:35895/c/test-chat?workspaceUri=file%3A%2F%2F%2Fsome%2Fpath',
+            webSocketDebuggerUrl: `ws://127.0.0.1:${testPort}/devtools/page/webview-id`,
+        };
+        mockTargets.push(webviewTarget);
+
+        await service.connect();
+
+        const info = await service.getWebviewSessionInfo();
+        expect(info).not.toBeNull();
+        expect(info?.title).toBe('Feature Work');
+        expect(info?.hasActiveChat).toBe(true);
+
+        mockTargets.pop();
     });
 });

@@ -25,7 +25,7 @@ Antigravity Telegram provides a unified CLI entry point (`antigravity-telegram` 
 | :--- | :--- | :--- | :--- |
 | `/project` | `[search_term]` | Group / DM | Displays an interactive `InlineKeyboard` listing discovered projects under `WORKSPACE_BASE_DIR`. Selecting a project binds it to the current topic, automatically opens/switches the workspace in Antigravity IDE (reusing empty windows when available), and initializes event detectors. |
 | `/new` | None | Topic / DM | Spawns a brand-new chat session in the active Antigravity workspace window, clearing previous conversational context. |
-| `/chat` | None | Topic / DM | Presents a paginated picker showing previous sessions saved for the current workspace. Selecting a session restores it in the IDE. |
+| `/chat` | None | Topic / DM | Displays active workspace binding details, connection state, live chat session title (extracted via CDP and Antigravity IDE webview inspection), and lists saved sessions for the current workspace. |
 | `/model` | None | Any | Displays available LLM models configured in Antigravity (e.g. Gemini Pro, Flash, Claude, etc.) and allows one-tap model switching. |
 | `/mode` | None | Any | Toggles Antigravity operation modes (e.g., Code / Architect / Ask / Plan). |
 | `/template`| `[name]` | Any | Lists or applies reusable prompt templates from SQLite. Allows swift insertion of frequently used coding prompts. |

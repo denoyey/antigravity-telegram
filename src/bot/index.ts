@@ -839,12 +839,25 @@ async function sendPromptToAntigravity(
                         try {
                             const sessionInfo = await options.chatSessionService.getCurrentSessionInfo(cdp);
                             if (sessionInfo && sessionInfo.hasActiveChat && sessionInfo.title && sessionInfo.title !== t('(Untitled)')) {
-                                const session = options.chatSessionRepo.findByChannelId(channelKey(channel));
+                                let session = options.chatSessionRepo.findByChannelId(channelKey(channel));
                                 const projectName = session
                                     ? bridge.pool.extractProjectName(session.workspacePath)
                                     : cdp.getCurrentWorkspaceName();
                                 if (projectName) {
                                     registerApprovalSessionChannel(bridge, projectName, sessionInfo.title, channel);
+                                }
+
+                                if (!session && projectName) {
+                                    const chKey = channelKey(channel);
+                                    const guildId = String(channel.chatId);
+                                    const sessionNumber = options.chatSessionRepo.getNextSessionNumber(guildId);
+                                    session = options.chatSessionRepo.create({
+                                        channelId: chKey,
+                                        categoryId: guildId,
+                                        workspacePath: projectName,
+                                        sessionNumber,
+                                        guildId,
+                                    });
                                 }
 
                                 if (session && session.displayName !== sessionInfo.title) {
@@ -1286,41 +1299,66 @@ export const startBot = async (cliLogLevel?: LogLevel) => {
         const ch = getChannel(ctx);
         const key = channelKey(ch);
         const session = chatSessionRepo.findByChannelId(key);
+        const binding = workspaceBindingRepo.findByChannelId(key);
+        const workspaceName = session?.workspacePath || binding?.workspacePath;
 
-        logger.debug(`[/chat] Command received. channelKey="${key}" lastActiveWorkspace="${bridge.lastActiveWorkspace || '(none)'}"`);
+        logger.debug(`[/chat] Command received. channelKey="${key}" workspaceName="${workspaceName || '(none)'}"`);
 
-        if (!session) {
-            const activeNames = bridge.pool.getActiveWorkspaceNames();
-            logger.debug(`[/chat] No session bound to this channel. activeNames in pool: ${activeNames.join(', ') || '(empty)'}`);
-
-            const anyCdp = activeNames.length > 0 ? bridge.pool.getConnected(activeNames[0]) : null;
-            const info = anyCdp
-                ? await chatSessionService.getCurrentSessionInfo(anyCdp)
-                : { title: '(CDP Disconnected)', hasActiveChat: false };
-
+        if (!workspaceName) {
             await replyHtml(ctx,
                 `<b>💬 Chat Session Info</b>\n\n` +
-                `<b>Title:</b> ${escapeHtml(info.title)}\n` +
-                `<b>Status:</b> ${info.hasActiveChat ? '🟢 Active' : '⚪ Inactive'}\n\n` +
                 `<i>No project bound to this chat thread. Use /project to select one.</i>\n` +
                 `<code>Key: ${key}</code>`
             );
             return;
         }
 
-        const allSessions = chatSessionRepo.findByCategoryId(session.categoryId);
-        const sessionList = allSessions.map(s => {
-            const name = s.displayName || `session-${s.sessionNumber}`;
-            const current = s.channelId === key ? ' ← Current' : '';
-            return `• ${name}${current}`;
-        }).join('\n');
+        const workspacePath = workspaceService.getWorkspacePath(workspaceName);
+        let cdp = bridge.pool.getConnected(workspaceName) || bridge.pool.getConnected(bridge.pool.extractProjectName(workspacePath));
+        if (!cdp) {
+            try {
+                cdp = await bridge.pool.getOrConnect(workspacePath);
+            } catch (err: any) {
+                logger.warn(`[/chat] Could not connect to CDP for ${workspaceName}:`, err);
+            }
+        }
+
+        const isConnected = cdp?.isConnected() ?? false;
+        const info = (cdp && isConnected)
+            ? await chatSessionService.getCurrentSessionInfo(cdp)
+            : { title: '(CDP Disconnected)', hasActiveChat: false };
+
+        let statusText = '⚪ Inactive';
+        if (isConnected) {
+            statusText = info.hasActiveChat ? '🟢 Active' : '🟢 Ready (Connected to Antigravity IDE)';
+        } else {
+            statusText = '🔴 Disconnected from Antigravity IDE';
+        }
+
+        const allSessions = session ? chatSessionRepo.findByCategoryId(session.categoryId) : [];
+        let sessionListText = '';
+        if (allSessions.length > 0) {
+            const list = allSessions.map(s => {
+                const name = s.displayName || `session-${s.sessionNumber}`;
+                const current = s.channelId === key ? ' ← Current' : '';
+                return `• ${name}${current}`;
+            }).join('\n');
+            sessionListText = `\n\n<b>Sessions (${allSessions.length}):</b>\n${escapeHtml(list)}`;
+        }
+
+        const currentText = session?.sessionNumber
+            ? `<b>Current:</b> #${session.sessionNumber} — ${escapeHtml(session.displayName || (info.hasActiveChat ? info.title : '(Unset)'))}\n`
+            : (info.hasActiveChat ? `<b>Active Chat:</b> ${escapeHtml(info.title)}\n` : '');
 
         await replyHtml(ctx,
             `<b>💬 Chat Session Info</b>\n\n` +
-            `<b>Current:</b> #${session.sessionNumber} — ${escapeHtml(session.displayName || '(Unset)')}\n` +
-            `<b>Project:</b> ${escapeHtml(session.workspacePath)}\n` +
-            `<b>Total sessions:</b> ${allSessions.length}\n\n` +
-            `<b>Sessions:</b>\n${escapeHtml(sessionList)}`
+            `<b>Project:</b> ${escapeHtml(workspaceName)}\n` +
+            `<code>${escapeHtml(workspacePath)}</code>\n` +
+            `<b>Status:</b> ${statusText}\n` +
+            currentText +
+            sessionListText +
+            `\n\n<i>Send any text message here to interact with this project.</i>\n` +
+            `<code>Key: ${key}</code>`
         );
     });
 

@@ -962,6 +962,101 @@ export class CdpService extends EventEmitter {
     }
 
     /**
+     * Inspect webview targets associated with this workbench to extract the current chat title.
+     * In Antigravity IDE, the chat UI is hosted inside an iframe webview target with its own CDP endpoint.
+     */
+    async getWebviewSessionInfo(): Promise<{ title: string; hasActiveChat: boolean } | null> {
+        try {
+            const match = this.targetUrl?.match(/\/devtools\/page\/([a-zA-Z0-9_-]+)/);
+            const targetPageId = match ? match[1] : null;
+
+            const allTargets = await this.scanAllPorts();
+            if (allTargets.length === 0) return null;
+
+            let candidates: any[] = [];
+            if (targetPageId) {
+                const directChildren = allTargets.filter(t => t.parentId === targetPageId);
+                const directIds = new Set(directChildren.map(c => c.id));
+                const grandChildren = allTargets.filter(t => directIds.has(t.parentId));
+                candidates = [...grandChildren, ...directChildren];
+            }
+
+            const wsPath = this.currentWorkspacePath;
+            const wsUriEncoded = wsPath ? encodeURIComponent(wsPath) : null;
+            const matchTargets = allTargets.filter(t =>
+                t.type === 'iframe' &&
+                (t.url?.includes('/c/') || (wsUriEncoded && t.url?.includes(wsUriEncoded)))
+            );
+
+            const combinedTargets = [...candidates.filter(t => t.type === 'iframe' && t.url?.includes('/c/')), ...matchTargets];
+            const target = combinedTargets[0];
+            if (!target || !target.webSocketDebuggerUrl) return null;
+
+            return await new Promise<{ title: string; hasActiveChat: boolean } | null>((resolve) => {
+                const ws = new WebSocket(target.webSocketDebuggerUrl);
+                const timeout = setTimeout(() => {
+                    try { ws.terminate(); } catch { }
+                    resolve(null);
+                }, 3000);
+
+                ws.on('open', () => {
+                    ws.send(JSON.stringify({
+                        id: 1,
+                        method: 'Runtime.evaluate',
+                        params: {
+                            expression: 'document.title',
+                            returnByValue: true,
+                        },
+                    }));
+                });
+
+                ws.on('message', (msg) => {
+                    clearTimeout(timeout);
+                    try {
+                        const data = JSON.parse(msg.toString());
+                        const rawTitle = (data?.result?.result?.value || '').trim();
+                        ws.close();
+                        if (!rawTitle) return resolve(null);
+
+                        // Format: "<Conversation Title> - <Workspace Name> - Antigravity"
+                        const parts = rawTitle.split(/\s*-\s*/);
+                        if (parts.length > 1 && parts[parts.length - 1].toLowerCase().includes('antigravity')) {
+                            parts.pop();
+                        }
+                        const wsName = this.currentWorkspaceName || (this.currentWorkspacePath ? extractProjectNameFromPath(this.currentWorkspacePath) : '');
+                        if (parts.length > 1 && (
+                            (wsName && parts[parts.length - 1].toLowerCase() === wsName.toLowerCase()) ||
+                            parts[parts.length - 1].toLowerCase().includes('outside of project')
+                        )) {
+                            parts.pop();
+                        }
+                        const title = parts.join(' - ').trim();
+                        const isNewOrEmpty = !title ||
+                            title.toLowerCase() === 'antigravity' ||
+                            title.toLowerCase() === 'agent' ||
+                            title.toLowerCase().includes('new conversation');
+
+                        resolve({
+                            title: isNewOrEmpty ? '(No active chat)' : title,
+                            hasActiveChat: !isNewOrEmpty,
+                        });
+                    } catch {
+                        resolve(null);
+                    }
+                });
+
+                ws.on('error', () => {
+                    clearTimeout(timeout);
+                    resolve(null);
+                });
+            });
+        } catch (err) {
+            logger.debug('[CdpService] getWebviewSessionInfo failed:', err);
+            return null;
+        }
+    }
+
+    /**
      * Wait by polling until cascade-panel context becomes available.
      * Right after Antigravity launch, contexts are created asynchronously even after Runtime.enable,
      * so use this method to confirm readiness before DOM operations.
